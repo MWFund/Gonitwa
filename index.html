@@ -474,6 +474,121 @@
       .rules-cell span:first-child { font-size: 1.5em; line-height: 1; }
       .rules-cell span:nth-child(2) { color: var(--c-text-muted); }
       .rules-cell strong { font-family: var(--font-display); font-weight: 800; color: var(--c-accent-gold); }
+
+      /* ==================== MOBILE / TABLET RESPONSIVE ==================== */
+
+      /* Tablet: < 1024px — already handled by the grid fallback to 1-column */
+
+      /* Small tablet & phone: < 768px */
+      @media (max-width: 768px) {
+        :root {
+          --space-xl: 32px;
+          --space-2xl: 48px;
+          --space-3xl: 64px;
+        }
+
+        /* Start menu: remove center-align so content starts at top on short screens */
+        .start-menu {
+          align-items: flex-start;
+          padding: var(--space-md) var(--space-sm);
+        }
+
+        /* Stack layout into single column explicitly */
+        .start-menu-layout {
+          gap: var(--space-md);
+        }
+
+        /* Shrink the giant game title */
+        .game-heading {
+          font-size: clamp(2.5rem, 10vw, 4rem);
+        }
+
+        /* Shrink description text */
+        .hero-description {
+          font-size: var(--text-base);
+          margin-top: var(--space-xs);
+        }
+
+        /* Piece grid: always 3 columns on mobile */
+        .piece-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* Piece buttons: smaller on mobile */
+        .piece-btn {
+          font-size: var(--text-xl);
+        }
+
+        /* Tactile panels: less padding */
+        .tactile-panel {
+          padding: var(--space-md);
+        }
+
+        /* Leaderboard: less padding */
+        .leaderboard-section {
+          padding: var(--space-sm) var(--space-md);
+        }
+
+        /* Hide help text on mobile (clutters small screens) */
+        .help-text { display: none; }
+
+        /* HUD dots: smaller */
+        .hud-dot { width: 26px; height: 26px; font-size: 0.8rem; }
+
+        /* Score HUD: move closer to edge */
+        .score-hud { right: var(--space-sm); top: var(--space-xs); padding: var(--space-xs) var(--space-sm); }
+
+        /* Level HUD: smaller bottom gap */
+        .level-hud { bottom: var(--space-sm); padding: var(--space-xs); }
+
+        /* Modal: full-width, less padding, scrollable */
+        .score-modal {
+          padding: var(--space-md);
+          max-height: 90dvh;
+          overflow-y: auto;
+          border-radius: var(--radius-md);
+        }
+
+        .score-big { font-size: clamp(2.5rem, 10vw, 4rem); }
+        .modal-result-badge { width: 60px; height: 60px; font-size: 2rem; margin-bottom: var(--space-sm); }
+        .modal-title { font-size: var(--text-xl); }
+      }
+
+      /* Phone: < 480px — extra tweaks for very narrow screens */
+      @media (max-width: 480px) {
+        .start-menu { padding: var(--space-sm); }
+
+        .game-heading { font-size: clamp(2rem, 12vw, 3rem); letter-spacing: -0.02em; }
+
+        /* Brand eyebrow smaller */
+        .brand-eyebrow { font-size: 0.7rem; }
+
+        /* Piece grid: 6 columns (1 row, compact icons) */
+        .piece-grid {
+          grid-template-columns: repeat(6, 1fr);
+          gap: var(--space-2xs);
+          margin-bottom: var(--space-sm);
+        }
+
+        .piece-btn { font-size: var(--text-lg); border-radius: var(--radius-sm); }
+
+        /* Start button: full width */
+        .btn-primary { width: 100%; text-align: center; padding: var(--space-sm) var(--space-md); }
+
+        /* Speed panel header + toggles: compact */
+        .panel-heading { font-size: var(--text-base); margin-bottom: var(--space-sm); }
+      }
+
+      /* Landscape phone: < 600px height — very short, compact layout */
+      @media (max-height: 600px) and (orientation: landscape) {
+        .start-menu { align-items: flex-start; padding: var(--space-xs) var(--space-sm); }
+        .start-menu-layout { gap: var(--space-sm); grid-template-columns: 1fr 1fr; align-items: start; }
+        .hero-section { gap: var(--space-xs); }
+        .game-heading { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+        .hero-description { display: none; }
+        .leaderboard-section { display: none; }
+        .tactile-panel { padding: var(--space-sm); }
+      }
     </style>
   </head>
   <body>

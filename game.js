@@ -558,7 +558,8 @@ window.onload = function () {
     style.position = "absolute";
     style.left = "50%";
     style.top = "0";
-    style.marginLeft = -SIZE / 2 + "px ";
+    style.marginLeft = -SIZE / 2 + "px";
+    style.transformOrigin = "top center";
 
     initCheckBoardCanvas();
     // initSkyCanvas(); // DISABLED: Sky background removed
@@ -577,7 +578,29 @@ window.onload = function () {
     removedPieces = [];
     lastTime = Date.now();
     rafHandle = requestAnimationFrame(tic);
+
+    // Apply responsive scaling after init
+    applyResponsiveScale();
   }
+
+  // ===== RESPONSIVE SCALING =====
+  function applyResponsiveScale() {
+    var rootEl = document.getElementById("root");
+    if (!rootEl) return;
+    var availW = window.innerWidth;
+    var availH = window.innerHeight;
+    var scaleX = availW / SIZE;
+    var scaleY = availH / (SIZE + HORIZON_Y);
+    var scale = Math.min(scaleX, scaleY, 1); // never upscale beyond 1x
+    rootEl.style.transform = "scale(" + scale + ")";
+    // After scaling, correct the vertical space taken by the root element
+    rootEl.style.height = (SIZE + HORIZON_Y) + "px";
+    // Shift body height to match scaled height so page doesn't scroll
+    document.body.style.height = Math.ceil((SIZE + HORIZON_Y) * scale) + "px";
+    document.body.style.overflow = "hidden";
+  }
+
+  window.addEventListener("resize", applyResponsiveScale);
 
   // ===== MENU FUNCTIONS =====
   function showStartMenu() {
@@ -3586,9 +3609,42 @@ window.onload = function () {
     onmouse(true, e);
   };
   document.onmousemove = function (e) {
-    mouse.x = e.clientX - root.offsetLeft;
-    mouse.y = e.clientY;
+    // Account for CSS scale transform on #root
+    var rootEl = document.getElementById("root");
+    var scale = 1;
+    if (rootEl) {
+      var rect = rootEl.getBoundingClientRect();
+      scale = rect.width / SIZE; // actual rendered width / logical width
+    }
+    mouse.x = (e.clientX - (rootEl ? rootEl.getBoundingClientRect().left : root.offsetLeft)) / scale;
+    mouse.y = e.clientY / scale;
   };
+
+  // Touch support: map touch coordinates to logical game coordinates
+  function ontouch(e) {
+    e.preventDefault();
+    var touch = e.changedTouches[0];
+    var rootEl = document.getElementById("root");
+    var scale = 1;
+    var offsetLeft = 0;
+    if (rootEl) {
+      var rect = rootEl.getBoundingClientRect();
+      scale = rect.width / SIZE;
+      offsetLeft = rect.left;
+    }
+    mouse.x = (touch.clientX - offsetLeft) / scale;
+    mouse.y = touch.clientY / scale;
+    mouse.click = (e.type === "touchstart" || e.type === "touchend");
+    // Simulate the rest of the mouse handling
+    // Trigger space/click for advancing the intro
+    if (e.type === "touchend") {
+      keys.space = 1;
+      setTimeout(function() { keys.space = 0; }, 100);
+    }
+  }
+  document.addEventListener("touchstart", ontouch, { passive: false });
+  document.addEventListener("touchmove",  ontouch, { passive: false });
+  document.addEventListener("touchend",   ontouch, { passive: false });
 
   /*
     document.oncontextmenu = function(e){
