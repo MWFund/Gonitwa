@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Gonitwa Szachowa - Fundacja Więcej Mądrości</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;800;900&family=Plus+Jakarta+Sans:wght@500;700&display=swap" rel="stylesheet" />
+    
+    <script type="text/javascript" src="game.js"></script>
+    
+    <style>
+      /* --- Bold, Memorable Design Tokens --- */
+      :root {
+        --c-ink: oklch(0.18 0.05 260);
+        --c-surface: oklch(0.25 0.06 260);
+        --c-surface-hover: oklch(0.32 0.08 260);
+        --c-accent-red: oklch(0.62 0.25 25);
+        --c-accent-red-dim: oklch(0.50 0.20 25);
+        --c-accent-blue: oklch(0.65 0.16 250);
+        --c-accent-blue-dim: oklch(0.55 0.14 250);
+        --c-accent-gold: oklch(0.85 0.16 85);
+        --c-accent-gold-dim: oklch(0.70 0.15 85);
+        --c-accent-green: oklch(0.72 0.18 150);
+        --c-accent-green-dim: oklch(0.58 0.18 150);
+        --c-text-bright: oklch(0.98 0.01 260);
+        --c-text-muted: oklch(0.75 0.05 260);
+
+        --font-display: 'Outfit', system-ui, sans-serif;
+        --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+        
+        --text-xs: clamp(0.75rem, 0.5vw + 0.6rem, 0.875rem);
+        --text-sm: clamp(0.875rem, 0.8vw + 0.6rem, 1rem);
+        --text-base: clamp(1rem, 1vw + 0.75rem, 1.125rem);
+        --text-lg: clamp(1.25rem, 1.5vw + 1rem, 1.5rem);
+        --text-xl: clamp(1.5rem, 2vw + 1.25rem, 2rem);
+        --text-2xl: clamp(2rem, 3vw + 1.5rem, 3rem);
+        --text-display: clamp(2.5rem, 5vw + 1.5rem, 5.5rem);
+
+        --space-3xs: 4px;
+        --space-2xs: 8px;
+        --space-xs: 12px;
+        --space-sm: 16px;
+        --space-md: 24px;
+        --space-lg: 32px;
+        --space-xl: 48px;
+        --space-2xl: 64px;
+        --space-3xl: 96px;
+        
+        --radius-sm: 12px;
+        --radius-md: 24px;
+        --radius-lg: 40px;
+        --radius-pill: 9999px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+      body, h1, h2, h3, p, figure, blockquote, dl, dd { margin: 0; }
+
+      body {
+        font-family: var(--font-body);
+        background-color: var(--c-ink);
+        color: var(--c-text-bright);
+        min-height: 100vh;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+
+      :focus-visible {
+        outline: 4px solid var(--c-accent-gold);
+        outline-offset: 4px;
+        border-radius: var(--radius-sm);
+      }
+
+      button { background: transparent; border: none; font: inherit; color: inherit; cursor: pointer; }
+
+      canvas, svg { display: block; position: absolute; top: 0; left: 0; }
+      #root { cursor: pointer; z-index: 10; transform-origin: center top; }
+
+      /* ==================== START MENU ==================== */
+      .start-menu {
+        position: fixed; inset: 0; z-index: 200;
+        background-color: var(--c-ink);
+        padding: clamp(var(--space-md), 4vw, var(--space-xl));
+        overflow-y: auto;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .start-menu.hidden { display: none; pointer-events: none; }
+
+      .start-menu-layout {
+        display: grid; grid-template-columns: 1fr;
+        gap: var(--space-xl);
+        width: 100%; max-width: 1280px; margin: 0 auto;
+      }
+
+      @media (min-width: 1024px) {
+        .start-menu-layout {
+          grid-template-columns: 1.1fr 1fr;
+          align-items: start; gap: var(--space-3xl);
+        }
+      }
+
+      /* Left column */
+      .hero-section {
+        display: flex; flex-direction: column; gap: var(--space-md);
+        opacity: 0; animation: revealUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+      }
+      .brand-eyebrow {
+        font-family: var(--font-body); font-size: var(--text-sm);
+        text-transform: uppercase; letter-spacing: 0.15em;
+        color: var(--c-accent-blue); font-weight: 700;
+      }
+      .game-heading {
+        font-family: var(--font-display); font-size: var(--text-display);
+        font-weight: 900; line-height: 0.95; letter-spacing: -0.04em;
+        margin-left: -0.04em; color: var(--c-text-bright); word-break: break-word;
+      }
+      .game-heading em { font-style: normal; color: var(--c-accent-red); display: block; }
+      .hero-description {
+        font-size: var(--text-lg); line-height: 1.4;
+        color: var(--c-text-muted); max-width: 480px; margin-top: var(--space-sm);
+      }
+
+      /* Player name input */
+      .player-name-field {
+        display: flex; gap: var(--space-sm); align-items: stretch;
+        margin-top: var(--space-sm);
+      }
+      .name-input {
+        flex: 1; background: var(--c-surface); color: var(--c-text-bright);
+        border: 2px solid var(--c-surface-hover); border-radius: var(--radius-pill);
+        padding: var(--space-sm) var(--space-md);
+        font-family: var(--font-body); font-size: var(--text-base); font-weight: 500;
+        transition: border-color 0.2s;
+        user-select: text; /* Allow typing! */
+      }
+      .name-input::placeholder { color: var(--c-text-muted); }
+      .name-input:focus { outline: none; border-color: var(--c-accent-blue); }
+
+      /* Leaderboard (left column bottom) */
+      .leaderboard-section {
+        background: var(--c-surface); border-radius: var(--radius-lg);
+        padding: var(--space-md) var(--space-lg); margin-top: var(--space-sm);
+        opacity: 0; animation: revealUp 0.8s 0.15s cubic-bezier(0.16,1,0.3,1) forwards;
+      }
+      .leaderboard-title {
+        font-family: var(--font-display); font-weight: 800;
+        font-size: var(--text-base); color: var(--c-text-bright);
+        margin-bottom: var(--space-sm);
+        display: flex; align-items: center; gap: var(--space-xs);
+      }
+      .leaderboard-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+      .lb-item {
+        display: flex; align-items: center; gap: var(--space-xs);
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-sm);
+        background: var(--c-ink); transition: background 0.2s;
+        font-size: var(--text-sm);
+      }
+      .lb-item:nth-child(1) { background: rgba(255,215,0,0.12); }
+      .lb-item:nth-child(2) { background: rgba(192,192,192,0.12); }
+      .lb-item:nth-child(3) { background: rgba(205,127,50,0.12); }
+      .lb-rank {
+        font-family: var(--font-display); font-weight: 800; font-size: var(--text-xs);
+        width: 28px; text-align: center; flex-shrink: 0; color: var(--c-text-muted);
+      }
+      .lb-item:nth-child(1) .lb-rank { color: var(--c-accent-gold); }
+      .lb-item:nth-child(2) .lb-rank { color: #c0c0c0; }
+      .lb-item:nth-child(3) .lb-rank { color: #cd7f32; }
+      .lb-name { flex: 1; font-weight: 700; color: var(--c-text-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .lb-date { font-size: var(--text-xs); color: var(--c-text-muted); }
+      .lb-score {
+        font-family: var(--font-display); font-weight: 800;
+        font-size: var(--text-sm); color: var(--c-accent-gold);
+        background: rgba(255,217,61,0.12); padding: 4px 10px; border-radius: var(--radius-pill);
+      }
+      .lb-empty { text-align: center; color: var(--c-text-muted); font-size: var(--text-sm); padding: var(--space-md) 0; }
+
+      /* Right column: controls */
+      .controls-section {
+        display: flex; flex-direction: column; gap: var(--space-lg);
+      }
+      .tactile-panel {
+        background-color: var(--c-surface); border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        box-shadow: 0 8px 0 var(--c-ink), 0 8px 0 2px var(--c-surface-hover);
+        opacity: 0; animation: revealUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
+      }
+      .controls-section > *:nth-child(1) { animation-delay: 0.1s; }
+      .controls-section > *:nth-child(2) { animation-delay: 0.2s; }
+      .controls-section > *:nth-child(3) { animation-delay: 0.3s; }
+
+      @keyframes revealUp {
+        0% { opacity: 0; transform: translateY(40px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+
+      .panel-heading {
+        font-family: var(--font-display); font-size: var(--text-lg);
+        font-weight: 800; color: var(--c-text-bright);
+        margin-bottom: var(--space-md);
+        display: flex; justify-content: space-between; align-items: baseline;
+      }
+      .panel-heading span {
+        font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700;
+        color: var(--c-accent-gold); text-transform: uppercase; letter-spacing: 0.05em;
+      }
+
+      /* Piece Grid */
+      .piece-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: var(--space-sm); margin-bottom: var(--space-md);
+      }
+      .piece-btn {
+        background-color: var(--c-ink); border: 2px solid transparent;
+        color: var(--c-text-bright); font-size: var(--text-2xl);
+        border-radius: var(--radius-md); aspect-ratio: 1;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background-color 0.2s, box-shadow 0.2s;
+        will-change: transform; position: relative; overflow: hidden;
+      }
+      .piece-btn:hover { background-color: var(--c-surface-hover); transform: translateY(-4px); }
+      .piece-btn.active {
+        background-color: var(--c-accent-gold); color: var(--c-ink);
+        transform: scale(1.05) translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.3), 0 4px 0 var(--c-accent-gold-dim);
+      }
+      .piece-btn.active:active { transform: scale(1.05) translateY(0); box-shadow: 0 0 0 var(--c-accent-gold-dim); }
+
+      .btn-ghost {
+        width: 100%; padding: var(--space-sm) var(--space-md);
+        border-radius: var(--radius-pill); font-weight: 700; font-size: var(--text-sm);
+        text-transform: uppercase; letter-spacing: 0.05em;
+        color: var(--c-accent-blue); background: transparent;
+        border: 2px solid var(--c-accent-blue); transition: all 0.2s ease-out;
+      }
+      .btn-ghost:hover, .btn-ghost.active {
+        background-color: var(--c-accent-blue); color: var(--c-ink);
+      }
+      .toggle-row { display: flex; gap: var(--space-sm); }
+      .toggle-row .btn-ghost { flex: 1; }
+
+      .btn-primary {
+        background-color: var(--c-accent-red); color: var(--c-text-bright);
+        font-family: var(--font-display); font-size: var(--text-xl);
+        font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em;
+        padding: var(--space-md) var(--space-xl); border-radius: var(--radius-pill);
+        box-shadow: 0 8px 0 var(--c-accent-red-dim), 0 15px 25px rgba(0,0,0,0.4);
+        transition: transform 0.1s cubic-bezier(0.4,0,0.2,1), box-shadow 0.1s;
+        will-change: transform; margin-top: var(--space-sm); transform-origin: center bottom;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 0 var(--c-accent-red-dim), 0 20px 30px rgba(0,0,0,0.4);
+      }
+      .btn-primary:active {
+        transform: translateY(8px);
+        box-shadow: 0 0 0 var(--c-accent-red-dim), 0 5px 10px rgba(0,0,0,0.4);
+      }
+
+      /* ==================== IN-GAME HUD ==================== */
+      .level-hud {
+        position: fixed; bottom: var(--space-lg); left: 50%; transform: translateX(-50%);
+        z-index: 100; background-color: var(--c-surface);
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-pill);
+        display: flex; align-items: center; gap: var(--space-sm);
+        box-shadow: 0 4px 0 var(--c-ink), 0 10px 30px rgba(0,0,0,0.4);
+        transition: opacity 0.3s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      .level-hud.hidden {
+        opacity: 0; transform: translateX(-50%) translateY(40px); pointer-events: none;
+      }
+      .hud-label {
+        font-family: var(--font-display); font-weight: 800; font-size: var(--text-sm);
+        color: var(--c-text-muted); text-transform: uppercase;
+        letter-spacing: 0.05em; margin-left: var(--space-xs);
+      }
+      .hud-dots { display: flex; gap: 6px; }
+      .hud-dot {
+        width: 32px; height: 32px; border-radius: 50%;
+        background-color: var(--c-ink);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; color: var(--c-text-muted);
+        transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        font-family: var(--font-display);
+      }
+      .hud-dot.completed { background-color: var(--c-accent-blue); color: var(--c-ink); transform: scale(0.85); }
+      .hud-dot.current  { background-color: var(--c-accent-gold); color: var(--c-ink); transform: scale(1.2); box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 2; }
+
+      /* Live Score HUD */
+      .score-hud {
+        position: fixed; top: var(--space-sm); right: var(--space-lg);
+        z-index: 100; background-color: var(--c-surface);
+        padding: var(--space-xs) var(--space-md);
+        border-radius: var(--radius-pill);
+        display: flex; align-items: center; gap: var(--space-xs);
+        box-shadow: 0 4px 0 var(--c-ink), 0 8px 20px rgba(0,0,0,0.4);
+        transition: opacity 0.3s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      .score-hud.hidden { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+      .score-label {
+        font-family: var(--font-body); font-size: var(--text-xs); font-weight: 700;
+        color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.08em;
+      }
+      .score-value {
+        font-family: var(--font-display); font-size: var(--text-lg); font-weight: 900;
+        color: var(--c-accent-gold); min-width: 50px; text-align: right;
+        transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      .score-value.pop { transform: scale(1.4); }
+
+      /* Floating score indicator */
+      .floating-score {
+        position: fixed; z-index: 300;
+        font-family: var(--font-display); font-weight: 900;
+        font-size: var(--text-lg); color: var(--c-accent-gold);
+        pointer-events: none;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        animation: floatUp 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+      }
+      @keyframes floatUp {
+        0%   { opacity: 1; transform: translateY(0) scale(1); }
+        60%  { opacity: 1; transform: translateY(-60px) scale(1.1); }
+        100% { opacity: 0; transform: translateY(-100px) scale(0.9); }
+      }
+
+      /* ==================== SCORE MODAL ==================== */
+      .score-modal-backdrop {
+        position: fixed; inset: 0; z-index: 500;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        display: flex; align-items: center; justify-content: center;
+        padding: var(--space-md);
+        opacity: 0; animation: fadeIn 0.4s ease forwards;
+      }
+      .score-modal-backdrop.hidden { display: none; }
+
+      @keyframes fadeIn { to { opacity: 1; } }
+
+      .score-modal {
+        background: var(--c-surface); border-radius: var(--radius-lg);
+        padding: var(--space-xl); max-width: 560px; width: 100%;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        transform: translateY(40px); animation: slideUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) forwards;
+        text-align: center;
+      }
+      @keyframes slideUp { to { transform: translateY(0); } }
+
+      .modal-result-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 80px; height: 80px; border-radius: 50%;
+        font-size: 2.5rem; margin-bottom: var(--space-md);
+        background: var(--c-ink);
+      }
+      .modal-result-badge.win  { background: rgba(100,200,100,0.15); }
+      .modal-result-badge.loss { background: rgba(200,50,50,0.15); }
+
+      .modal-title {
+        font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 900;
+        color: var(--c-text-bright); margin-bottom: var(--space-xs);
+      }
+      .modal-subtitle { font-size: var(--text-sm); color: var(--c-text-muted); margin-bottom: var(--space-lg); }
+
+      .score-big {
+        font-family: var(--font-display); font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 900; color: var(--c-accent-gold); line-height: 1;
+        margin-bottom: var(--space-xs);
+      }
+      .score-unit { font-size: var(--text-sm); color: var(--c-text-muted); margin-bottom: var(--space-lg); }
+
+      /* Breakdown table */
+      .breakdown {
+        display: flex; flex-direction: column; gap: 4px;
+        margin: var(--space-md) 0 var(--space-lg);
+        text-align: left;
+      }
+      .breakdown-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-sm); background: var(--c-ink);
+        font-size: var(--text-sm);
+      }
+      .breakdown-label { color: var(--c-text-muted); }
+      .breakdown-val { font-family: var(--font-display); font-weight: 800; color: var(--c-accent-gold); }
+
+      /* Leaderboard position callout */
+      .personal-best-badge {
+        display: inline-flex; align-items: center; gap: var(--space-xs);
+        background: rgba(255,217,61,0.12); border-radius: var(--radius-pill);
+        padding: var(--space-xs) var(--space-md); font-size: var(--text-sm); font-weight: 700;
+        color: var(--c-accent-gold); margin-bottom: var(--space-lg);
+      }
+
+      .modal-actions { display: flex; flex-direction: column; gap: var(--space-sm); }
+      .btn-modal-primary {
+        background-color: var(--c-accent-red); color: var(--c-text-bright);
+        font-family: var(--font-display); font-size: var(--text-lg); font-weight: 900;
+        text-transform: uppercase; letter-spacing: 0.02em;
+        padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-pill);
+        box-shadow: 0 6px 0 var(--c-accent-red-dim), 0 10px 20px rgba(0,0,0,0.3);
+        transition: transform 0.1s, box-shadow 0.1s;
+      }
+      .btn-modal-primary:hover   { transform: translateY(-2px); box-shadow: 0 8px 0 var(--c-accent-red-dim), 0 15px 25px rgba(0,0,0,0.3); }
+      .btn-modal-primary:active  { transform: translateY(6px); box-shadow: 0 0 0 var(--c-accent-red-dim); }
+      .btn-modal-secondary {
+        color: var(--c-text-muted); font-size: var(--text-sm); font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        padding: var(--space-xs); border-radius: var(--radius-pill);
+        transition: color 0.2s;
+      }
+      .btn-modal-secondary:hover { color: var(--c-text-bright); }
+
+      /* Help footer */
+      .help-text {
+        position: fixed; top: var(--space-lg); left: var(--space-lg); z-index: 50;
+        font-size: var(--text-xs); color: var(--c-text-muted); max-width: 250px;
+        user-select: text;
+      }
+      .help-text a { color: var(--c-accent-blue); text-decoration: none; font-weight: 700; }
+      .help-text a:hover { text-decoration: underline; }
+      
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+      /* ==================== RULES ACCORDION ==================== */
+      .rules-accordion {
+        background: var(--c-surface); border-radius: var(--radius-lg);
+        overflow: hidden;
+        opacity: 0; animation: revealUp 0.8s 0.25s cubic-bezier(0.16,1,0.3,1) forwards;
+      }
+      .rules-accordion[open] { box-shadow: 0 8px 0 var(--c-ink), 0 8px 0 2px var(--c-surface-hover); }
+
+      .rules-summary {
+        list-style: none; display: flex; align-items: center; gap: var(--space-sm);
+        padding: var(--space-md) var(--space-lg);
+        font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700;
+        color: var(--c-accent-blue); cursor: pointer;
+        border: 2px solid transparent; border-radius: var(--radius-lg);
+        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        user-select: none;
+      }
+      .rules-summary::-webkit-details-marker { display: none; }
+      .rules-summary::marker { display: none; }
+      .rules-summary:hover { background: var(--c-surface-hover); color: var(--c-text-bright); }
+      .rules-accordion[open] .rules-summary { color: var(--c-text-bright); border-color: var(--c-surface-hover); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+      .rules-summary-icon { font-size: 1.2em; }
+      .rules-chevron {
+        margin-left: auto; font-size: 1.4em; line-height: 1;
+        display: inline-block; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      .rules-accordion[open] .rules-chevron { transform: rotate(90deg); }
+
+      .rules-body {
+        padding: var(--space-sm) var(--space-lg) var(--space-md);
+        border-top: 1px solid var(--c-surface-hover);
+      }
+      .rules-intro {
+        font-size: var(--text-xs); color: var(--c-text-muted);
+        margin-bottom: var(--space-sm); line-height: 1.5;
+      }
+      .rules-grid {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+        font-size: var(--text-xs);
+      }
+      .rules-cell {
+        background: var(--c-ink); border-radius: var(--radius-sm);
+        padding: 10px 6px; text-align: center;
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+      }
+      .rules-cell span:first-child { font-size: 1.5em; line-height: 1; }
+      .rules-cell span:nth-child(2) { color: var(--c-text-muted); }
+      .rules-cell strong { font-family: var(--font-display); font-weight: 800; color: var(--c-accent-gold); }
+    </style>
+  </head>
+  <body>
+    <!-- START MENU -->
+    <main class="start-menu" id="start-menu">
+      <div class="start-menu-layout">
+        
+        <!-- Left: Branding + Player Name + Leaderboard -->
+        <div>
+          <header class="hero-section">
+            <span class="brand-eyebrow">Fundacja Więcej Mądrości</span>
+            <h1 class="game-heading">Gonitwa <em>Szachowa</em></h1>
+            <p class="hero-description">
+              Przetrwaj jak najdłużej uciekając przed niebezpieczeństwem. Zdobywaj punkty za zbijanie figur i docieranie do kolejnych poziomów!
+            </p>
+
+            <!-- Player Name -->
+            <div class="player-name-field">
+              <input
+                type="text"
+                id="player-name-input"
+                class="name-input"
+                placeholder="Wpisz swoje imię..."
+                maxlength="20"
+                aria-label="Twoje imię gracza"
+              />
+            </div>
+          </header>
+
+          <!-- Leaderboard -->
+          <div class="leaderboard-section">
+            <h2 class="leaderboard-title">
+              <span aria-hidden="true">🏆</span> Najlepsze wyniki
+            </h2>
+            <ul class="leaderboard-list" id="leaderboard-list" aria-label="Tabela wyników">
+              <li class="lb-empty">Brak wyników – zagraj jako pierwszy!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right: Game Controls -->
+        <section class="controls-section">
+          
+          <!-- Piece Panel -->
+          <div class="tactile-panel" aria-labelledby="piece-label">
+            <h2 id="piece-label" class="panel-heading">
+              Twoja Figura <span id="piece-display">Król</span>
+            </h2>
+            <div class="piece-grid" role="group" aria-label="Wybór figury">
+              <button class="piece-btn active" data-piece="king"   onclick="setPlayerPiece('king')"   aria-label="Król (specjalna)"><span aria-hidden="true">♔</span></button>
+              <button class="piece-btn"        data-piece="queen"  onclick="setPlayerPiece('queen')"  aria-label="Hetman (9 pkt)"><span aria-hidden="true">♕</span></button>
+              <button class="piece-btn"        data-piece="rook"   onclick="setPlayerPiece('rook')"   aria-label="Wieża (5 pkt)"><span aria-hidden="true">♖</span></button>
+              <button class="piece-btn"        data-piece="bishop" onclick="setPlayerPiece('bishop')" aria-label="Goniec (3 pkt)"><span aria-hidden="true">♗</span></button>
+              <button class="piece-btn"        data-piece="knight" onclick="setPlayerPiece('knight')" aria-label="Skoczek (3 pkt)"><span aria-hidden="true">♘</span></button>
+              <button class="piece-btn"        data-piece="pawn"   onclick="setPlayerPiece('pawn')"   aria-label="Pion (1 pkt)"><span aria-hidden="true">♙</span></button>
+            </div>
+            <button class="btn-ghost" id="auto-piece-btn" onclick="toggleAutoPiece()">
+              Losuj za mnie
+            </button>
+          </div>
+
+          <!-- Speed Panel -->
+          <div class="tactile-panel" aria-labelledby="speed-label" style="padding: var(--space-md) var(--space-lg);">
+            <div style="display: flex; gap: var(--space-md); align-items: center; justify-content: space-between;">
+              <h2 id="speed-label" class="panel-heading" style="margin: 0;">
+                Prędkość <span id="speed-display" class="sr-only">×1</span>
+              </h2>
+              <div class="toggle-row" role="group" aria-label="Szybkość gry">
+                <button class="btn-ghost speed-btn" data-speed="0.5" onclick="setGameSpeed(0.5)">Wolna</button>
+                <button class="btn-ghost speed-btn active" data-speed="1" onclick="setGameSpeed(1)">Szybka</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rules accordion -->
+          <details class="rules-accordion" style="animation-delay: 0.25s !important;">
+            <summary class="rules-summary">
+              <span class="rules-summary-icon" aria-hidden="true">📖</span>
+              Zasady gry i punktacja
+              <span class="rules-chevron" aria-hidden="true">›</span>
+            </summary>
+            <div class="rules-body">
+              <p class="rules-intro">Uciekaj przed figurami — zbijaj je dla punktów. Dotrzyj do każdej linii obrony po bonus!</p>
+              <div class="rules-grid">
+                <div class="rules-cell"><span>♙</span><span>Pion</span><strong>1 pkt</strong></div>
+                <div class="rules-cell"><span>♗</span><span>Goniec</span><strong>3 pkt</strong></div>
+                <div class="rules-cell"><span>♘</span><span>Skoczek</span><strong>3 pkt</strong></div>
+                <div class="rules-cell"><span>♖</span><span>Wieża</span><strong>5 pkt</strong></div>
+                <div class="rules-cell"><span>♕</span><span>Hetman</span><strong>9 pkt</strong></div>
+                <div class="rules-cell"><span>🏁</span><span>Poziom N</span><strong>N×100 pkt</strong></div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Primary Action -->
+          <button class="btn-primary" onclick="startGameWithName()">
+            Rozpocznij Grę
+          </button>
+
+        </section>
+      </div>
+    </main>
+
+    <!-- In-Game Level HUD -->
+    <div class="level-hud hidden" id="level-panel" aria-live="polite">
+      <span class="hud-label" aria-hidden="true">Poziom</span>
+      <h2 class="sr-only">Poziom <span id="level-display">1 / 6</span></h2>
+      <div class="hud-dots" aria-hidden="true">
+        <div class="hud-dot current" id="level-1">1</div>
+        <div class="hud-dot" id="level-2">2</div>
+        <div class="hud-dot" id="level-3">3</div>
+        <div class="hud-dot" id="level-4">4</div>
+        <div class="hud-dot" id="level-5">5</div>
+        <div class="hud-dot" id="level-6">6</div>
+      </div>
+    </div>
+
+    <!-- Live Score HUD (shown during game) -->
+    <div class="score-hud hidden" id="score-hud" aria-live="polite" aria-atomic="true">
+      <span class="score-label">Wynik</span>
+      <span class="score-value" id="score-hud-value">0</span>
+    </div>
+
+    <!-- Help footer -->
+    <footer class="help-text">
+      Nie musisz grać idealnie jak arcymistrz. Uciekaj i zbijaj figury! <a href="https://en.wikipedia.org/wiki/Chess#Movement" target="_blank" rel="noopener">Ruchy figur</a>
+    </footer>
+
+    <!-- SCORE MODAL (shown on game end) -->
+    <div class="score-modal-backdrop hidden" id="score-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="score-modal">
+        <div class="modal-result-badge" id="modal-badge">🎉</div>
+        <h2 class="modal-title" id="modal-title">Koniec gry!</h2>
+        <p class="modal-subtitle" id="modal-subtitle">Dobra próba, <strong id="modal-player-name">Gracz</strong>!</p>
+
+        <div class="score-big" id="modal-score">0</div>
+        <div class="score-unit">punktów</div>
+
+        <div id="personal-best-badge" class="personal-best-badge" style="display:none">
+          ⭐ Nowy rekord osobisty!
+        </div>
+
+        <div class="breakdown" id="modal-breakdown"></div>
+
+        <div class="modal-actions">
+          <button class="btn-modal-primary" onclick="closeScoreModal(); startGameWithName();">
+            Zagraj ponownie
+          </button>
+          <button class="btn-modal-secondary" onclick="closeScoreModal();">
+            Wróć do menu
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // =====================================================
+      // SCORING / LEADERBOARD SYSTEM
+      // =====================================================
+
+      var LEADERBOARD_KEY = 'gonitwa_scores_v2';
+      var MAX_LB_ENTRIES = 10;
+      var currentPlayerName = 'Gracz';
+
+      // Label map for score breakdown
+      var PIECE_LABELS = {
+        'p': 'Pion',
+        'r': 'Wieża',
+        'b': 'Goniec',
+        'k': 'Skoczek',
+        'q': 'Hetman',
+        'w': 'Niedźwiedź',
+        'level': 'Bonus za poziom'
+      };
+
+      // ------ Leaderboard localStorage helpers ------
+
+      function loadLeaderboard() {
+        try {
+          return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+        } catch(e) { return []; }
+      }
+
+      function saveScore(name, score, level) {
+        var lb = loadLeaderboard();
+        var existingIdx = lb.findIndex(function(e){ return e.name === name; });
+        var isPersonalBest = false;
+        if (existingIdx >= 0) {
+          if (score > lb[existingIdx].score) {
+            lb[existingIdx].score = score;
+            lb[existingIdx].level = level;
+            lb[existingIdx].date = new Date().toLocaleDateString('pl-PL');
+            isPersonalBest = true;
+          }
+        } else {
+          lb.push({ name: name, score: score, level: level, date: new Date().toLocaleDateString('pl-PL') });
+          isPersonalBest = true;
+        }
+        lb.sort(function(a, b){ return b.score - a.score; });
+        lb = lb.slice(0, MAX_LB_ENTRIES);
+        try { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(lb)); } catch(e){}
+        return isPersonalBest;
+      }
+
+      function renderLeaderboard() {
+        var list = document.getElementById('leaderboard-list');
+        if (!list) return;
+        var lb = loadLeaderboard();
+        if (!lb.length) {
+          list.innerHTML = '<li class="lb-empty">Brak wyników – zagraj jako pierwszy!</li>';
+          return;
+        }
+        var medals = ['🥇', '🥈', '🥉'];
+        list.innerHTML = lb.map(function(entry, i) {
+          return '<li class="lb-item">' +
+            '<span class="lb-rank">' + (medals[i] || (i+1) + '.') + '</span>' +
+            '<span class="lb-name">' + escapeHtml(entry.name) + '</span>' +
+            '<span class="lb-date">' + (entry.date || '') + '</span>' +
+            '<span class="lb-score">' + entry.score + ' pkt</span>' +
+          '</li>';
+        }).join('');
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      // ------ Player name helpers ------
+      function getPlayerName() {
+        var input = document.getElementById('player-name-input');
+        var name = input ? input.value.trim() : '';
+        return name || 'Gracz';
+      }
+
+      function startGameWithName() {
+        currentPlayerName = getPlayerName();
+        // Update live score hud
+        document.getElementById('score-hud').classList.add('hidden');
+        var hv = document.getElementById('score-hud-value');
+        if (hv) hv.textContent = '0';
+        // Delegate to game.js exported function
+        if (typeof startGame === 'function') startGame();
+      }
+
+      // ------ Live score sync (poll from game.js) ------
+      var _scorePoller = null;
+      function startScorePoller() {
+        if (_scorePoller) clearInterval(_scorePoller);
+        _scorePoller = setInterval(function() {
+          if (typeof window.getScore === 'function') {
+            var s = window.getScore();
+            var el = document.getElementById('score-hud-value');
+            if (el && parseInt(el.textContent) !== s) {
+              el.textContent = s;
+              el.classList.add('pop');
+              setTimeout(function(){ el.classList.remove('pop'); }, 250);
+            }
+          }
+        }, 250);
+      }
+
+      function stopScorePoller() {
+        if (_scorePoller) { clearInterval(_scorePoller); _scorePoller = null; }
+      }
+
+      // ------ Floating score indicator ------
+      function showFloatingScore(text) {
+        var el = document.createElement('div');
+        el.className = 'floating-score';
+        el.textContent = text;
+        // Position near score HUD
+        var hud = document.getElementById('score-hud');
+        var rect = hud ? hud.getBoundingClientRect() : { left: window.innerWidth - 200, top: 60 };
+        el.style.left = (rect.left + rect.width / 2 - 40) + 'px';
+        el.style.top  = (rect.top + rect.height) + 'px';
+        document.body.appendChild(el);
+        el.addEventListener('animationend', function() { el.remove(); });
+        // Also update the HUD synchronously (don't wait for poller)
+        if (typeof window.getScore === 'function') {
+          var s = window.getScore();
+          var hv = document.getElementById('score-hud-value');
+          if (hv) { hv.textContent = s; hv.classList.add('pop'); setTimeout(function(){ hv.classList.remove('pop'); }, 250); }
+        }
+      }
+      // Expose to game.js
+      window.showFloatingScore = showFloatingScore;
+
+      // ------ Game end callback (called by game.js) ------
+      function onGameEnd(isWin, finalScore) {
+        stopScorePoller();
+        var level = (typeof window.getCurrentCheckpointLevel === 'function') ? window.getCurrentCheckpointLevel() : 1;
+        var isPersonalBest = saveScore(currentPlayerName, finalScore, level);
+        renderLeaderboard();
+
+        // Fill modal
+        var badge   = document.getElementById('modal-badge');
+        var title   = document.getElementById('modal-title');
+        var subtitle = document.getElementById('modal-subtitle');
+        var scoreBig = document.getElementById('modal-score');
+        var pbBadge = document.getElementById('personal-best-badge');
+        var breakdown = document.getElementById('modal-breakdown');
+        var playerNameEl = document.getElementById('modal-player-name');
+
+        if (badge)   { badge.textContent = isWin ? '🎉' : '💀'; badge.className = 'modal-result-badge ' + (isWin ? 'win' : 'loss'); }
+        if (title)   { title.textContent = isWin ? 'Brawo!' : 'Szach-mat!'; }
+        if (playerNameEl) playerNameEl.textContent = currentPlayerName;
+        if (subtitle) subtitle.querySelector('strong').textContent = currentPlayerName;
+        if (scoreBig) scoreBig.textContent = finalScore;
+        if (pbBadge)  pbBadge.style.display = isPersonalBest ? 'inline-flex' : 'none';
+
+        // Build breakdown
+        if (breakdown) {
+          var rawBreakdown = (typeof window.getScoreBreakdown === 'function') ? window.getScoreBreakdown() : [];
+          // Aggregate
+          var aggr = {};
+          rawBreakdown.forEach(function(item) {
+            var key = item.type === 'level' ? ('level_' + item.level) : item.type;
+            if (!aggr[key]) aggr[key] = { label: item.type === 'level' ? ('Poziom ' + item.level + ' – bonus') : (PIECE_LABELS[item.type] || item.type), total: 0, count: 0 };
+            aggr[key].total += item.pts;
+            aggr[key].count++;
+          });
+          var rows = Object.keys(aggr).map(function(key) {
+            var e = aggr[key];
+            var countStr = e.count > 1 ? ' ×' + e.count : '';
+            return '<div class="breakdown-row"><span class="breakdown-label">' + e.label + countStr + '</span><span class="breakdown-val">+' + e.total + ' pkt</span></div>';
+          });
+          breakdown.innerHTML = rows.length ? rows.join('') : '';
+        }
+
+        // Show modal
+        var modal = document.getElementById('score-modal');
+        if (modal) { modal.classList.remove('hidden'); }
+      }
+      window.onGameEnd = onGameEnd;
+
+      function closeScoreModal() {
+        var modal = document.getElementById('score-modal');
+        if (modal) modal.classList.add('hidden');
+      }
+      window.closeScoreModal = closeScoreModal;
+
+      // ------ Hook into start menu show/hide to manage score HUD ------
+      var _origHideStartMenu = window.hideStartMenu;
+      // Intercept when game actually starts (called from game.js startup)
+      // We use a MutationObserver to watch for #root being created
+      var _rootObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          m.addedNodes.forEach(function(node) {
+            if (node.id === 'root') {
+              // Game started – show score HUD
+              var hud = document.getElementById('score-hud');
+              if (hud) hud.classList.remove('hidden');
+              startScorePoller();
+            }
+          });
+        });
+      });
+      _rootObserver.observe(document.body, { childList: true });
+
+      // ------ Init on page load ------
+      document.addEventListener('DOMContentLoaded', function() {
+        renderLeaderboard();
+
+        // Restore player name from localStorage
+        var savedName = localStorage.getItem('gonitwa_player_name');
+        if (savedName) {
+          var input = document.getElementById('player-name-input');
+          if (input) input.value = savedName;
+        }
+
+        // Save player name on change
+        var input = document.getElementById('player-name-input');
+        if (input) {
+          input.addEventListener('input', function() {
+            localStorage.setItem('gonitwa_player_name', input.value.trim());
+          });
+        }
+
+        // Allow pressing Enter in name field to start
+        if (input) {
+          input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') startGameWithName();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
