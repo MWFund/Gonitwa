@@ -17,6 +17,41 @@
  *
  * @author Thomas Vian
  */
+
+/**
+ * TEXT_CONFIG - Wszystkie napisy w grze wyciągnięte do jednego obiektu dla ułatwienia edycji.
+ */
+const TEXT_CONFIG = {
+  intro: {
+    step1: ["Poddaj się !", "Pokonałem Twoją armię", "Pojmałem też twoją Królową !"],
+    step3: ["Jesteś otoczony,", "poddaj się teraz, a będę miłosierny."],
+    step4: ["Przenigdy !"],
+    step5: ["Jak chcesz...", "Zabieram ją do zamku.", "Rycerze, pojmijcie go, chcę go żywego."],
+    step7: (anim) => [
+      'Wygląda na to, że czeka mnie <tspan fill="red" font-family="impact">walka i Gonitwa' + anim + "</tspan>, za moją Królową.",
+      "Dzisiaj muszę cię ocalić!",
+    ],
+  },
+  ui: {
+    levelUp: (level) => " POZIOM " + level + "!",
+    checkmate: "CHECKMATE !",
+    paused: "PAUSED",
+    win: "YOU WIN !",
+    castle: "Alas, your Queen is in another castle...",
+  },
+  speakers: {
+    whiteKing: "White King :",
+    blackKing: "Black King :",
+  },
+  fonts: {
+    title: "60px",
+    subtitle: "28px",
+    pause: "42px",
+    dialogSpeaker: "24px",
+    dialogText: "22px",
+    checkText: "28px",
+  },
+};
 function J() {
   this.B = function (e) {
     for (var f = 0; 24 > f; f++) this[String.fromCharCode(97 + f)] = e[f] || 0;
@@ -1671,7 +1706,7 @@ window.onload = function () {
           var levelBonus = 100 * currentCheckpointLevel;
           currentScore += levelBonus;
           scoreBreakdown.push({ type: 'level', level: currentCheckpointLevel, pts: levelBonus });
-          if (typeof showFloatingScore === 'function') showFloatingScore('+' + levelBonus + ' POZIOM ' + currentCheckpointLevel + '!');
+          if (typeof showFloatingScore === 'function') showFloatingScore('+' + levelBonus + TEXT_CONFIG.ui.levelUp(currentCheckpointLevel));
           updateLevelPanel();
           aa.play("check"); // Play checkpoint sound
         }
@@ -1785,10 +1820,7 @@ window.onload = function () {
       //Waiting for space
     } else if (introStep == 1) {
       if (init) {
-        showDialog(true, [
-          "Poddaj się !",
-          "Pokonałem cię, a twoja Królowa jest moja !",
-        ]);
+        showDialog(true, TEXT_CONFIG.intro.step1);
         whiteKing.talking = true;
       }
     } else if (introStep == 2) {
@@ -1810,25 +1842,18 @@ window.onload = function () {
       }
     } else if (introStep == 3) {
       if (init) {
-        showDialog(true, [
-          "Jesteś otoczony,",
-          "poddaj się teraz, a będę miłosierny.",
-        ]);
+        showDialog(true, TEXT_CONFIG.intro.step3);
         whiteKing.talking = true;
       }
     } else if (introStep == 4) {
       if (init) {
-        showDialog(false, ["Przenigdy !"]);
+        showDialog(false, TEXT_CONFIG.intro.step4);
         blackKing.talking = true;
       }
       //sword ?
     } else if (introStep == 5) {
       if (init) {
-        showDialog(true, [
-          "Jak chcesz...",
-          "Zabieram ją do zamku.",
-          "Rycerze, pojmijcie go, chcę go żywego.",
-        ]);
+        showDialog(true, TEXT_CONFIG.intro.step5);
         whiteKing.talking = true;
       }
     } else if (introStep == 6) {
@@ -1897,12 +1922,7 @@ window.onload = function () {
       if (init) {
         var anim =
           '<animate attributeType="CSS" attributeName="fill" from="red" to="orange" dur="0.5s" repeatCount="indefinite"/>';
-        showDialog(false, [
-          'Wygląda na to, że nasze role są <tspan fill="red" font-family="impact">ODWRÓCONE' +
-            anim +
-            "</tspan>, moja Królowo.",
-          "Dzisiaj muszę cię ocalić!",
-        ]);
+        showDialog(false, TEXT_CONFIG.intro.step7(anim));
         blackKing.talking = true;
 
         //remove intro pieces
@@ -3191,7 +3211,7 @@ window.onload = function () {
       def.setAttributeNS(null, "id", id);
       svgAttrs(def, {
         x: "-40",
-        "font-size": "28",
+        "font-size": TEXT_CONFIG.fonts.checkText,
         fill: "red",
         stroke: "black",
         "stroke-width": "1",
@@ -3220,21 +3240,21 @@ window.onload = function () {
       svgAttrs(text, {
         x: "50%",
         y: "50%",
-        "font-size": "48px",
+        "font-size": TEXT_CONFIG.fonts.title,
         fill: "orange",
         stroke: "red",
         "stroke-width": "2px",
         "text-anchor": "middle",
         "font-family": "Impact",
       });
-      svgInnerHtml(text, "CHECKMATE !");
+      svgInnerHtml(text, TEXT_CONFIG.ui.checkmate);
       gameOverScreen.appendChild(text);
 
       text = document.createElementNS(xmlns, "text");
       svgAttrs(text, {
         x: "50%",
         y: "60%",
-        "font-size": "22px",
+        "font-size": TEXT_CONFIG.fonts.subtitle,
         fill: "white",
         stroke: "black",
         "stroke-width": "1px",
@@ -3268,7 +3288,7 @@ window.onload = function () {
       svgAttrs(text, {
         x: "50%",
         y: "60",
-        "font-size": "48px",
+        "font-size": TEXT_CONFIG.fonts.title,
         fill: "orange",
         stroke: "red",
         "stroke-width": "2px",
@@ -3284,7 +3304,7 @@ window.onload = function () {
       svgAttrs(pressSpaceText, {
         x: "50%",
         y: HORIZON_Y + SIZE - 10,
-        "font-size": "22px",
+        "font-size": TEXT_CONFIG.fonts.subtitle,
         fill: "white",
         stroke: "black",
         "stroke-width": "1px",
@@ -3303,14 +3323,14 @@ window.onload = function () {
       svgAttrs(pauseText, {
         x: "50%",
         y: "50%",
-        "font-size": "32px",
+        "font-size": TEXT_CONFIG.fonts.pause,
         fill: "orange",
         stroke: "black",
         "stroke-width": "1px",
         "text-anchor": "middle",
         "font-family": "Impact",
       });
-      svgInnerHtml(pauseText, "PAUSED");
+      svgInnerHtml(pauseText, TEXT_CONFIG.ui.paused);
       pauseText.style.display = "none";
       svgElem.appendChild(pauseText);
     }
@@ -3343,8 +3363,8 @@ window.onload = function () {
       dialogSpeakerText = document.createElementNS(xmlns, "text");
       svgAttrs(dialogSpeakerText, {
         x: 10,
-        y: 20,
-        "font-size": "18px",
+        y: 25,
+        "font-size": TEXT_CONFIG.fonts.dialogSpeaker,
         fill: "#fff",
         "text-anchor": "left",
         "font-family": "Impact",
@@ -3354,8 +3374,8 @@ window.onload = function () {
       dialogText = document.createElementNS(xmlns, "text");
       svgAttrs(dialogText, {
         x: 10,
-        y: 40,
-        "font-size": "16px",
+        y: 55,
+        "font-size": TEXT_CONFIG.fonts.dialogText,
         fill: "#fff",
         "text-anchor": "left",
         "font-family": "sans-serif",
@@ -3382,28 +3402,28 @@ window.onload = function () {
       svgAttrs(text, {
         x: "50%",
         y: "50%",
-        "font-size": "48px",
+        "font-size": TEXT_CONFIG.fonts.title,
         fill: "#5f7",
         stroke: "black",
         "stroke-width": "2px",
         "text-anchor": "middle",
         "font-family": "Impact",
       });
-      svgInnerHtml(text, "YOU WIN !");
+      svgInnerHtml(text, TEXT_CONFIG.ui.win);
       winScreen.appendChild(text);
 
       text = document.createElementNS(xmlns, "text");
       svgAttrs(text, {
         x: "50%",
         y: "60%",
-        "font-size": "22px",
+        "font-size": TEXT_CONFIG.fonts.subtitle,
         fill: "white",
         stroke: "black",
         "stroke-width": "1px",
         "text-anchor": "middle",
         "font-family": "Impact",
       });
-      svgInnerHtml(text, "Alas, your Queen is in another castle...");
+      svgInnerHtml(text, TEXT_CONFIG.ui.castle);
       winScreen.appendChild(text);
     }
   }
@@ -3413,9 +3433,9 @@ window.onload = function () {
 
   function showDialog(whiteKing, texts) {
     if (whiteKing) {
-      svgInnerHtml(dialogSpeakerText, "White King :");
+      svgInnerHtml(dialogSpeakerText, TEXT_CONFIG.speakers.whiteKing);
     } else {
-      svgInnerHtml(dialogSpeakerText, "Black King :");
+      svgInnerHtml(dialogSpeakerText, TEXT_CONFIG.speakers.blackKing);
     }
     var txt = "";
     for (var i = 0; i < texts.length; i++) {
