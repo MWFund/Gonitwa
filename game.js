@@ -520,7 +520,6 @@ window.onload = function () {
   //other SCG ids
   var ENEMY_FILTER = "ef";
   var CHECK_TEXT = "ct";
-  var CHECK_GRADIENT = "cg";
 
   var DANGER = "*";
   var CHECK_POINT = "#";
@@ -3218,18 +3217,6 @@ window.onload = function () {
     }
 
     function makeCheckTextDef(id, text) {
-      /*
-			//Gradient
-			var def = document.createElementNS (xmlns, 'linearGradient');
-			def.setAttributeNS (null, 'id', CHECK_GRADIENT);
-			svgAttrs(def, { x1:'0', x2:'0', y1:'0', y2:'100%', height:'100%', 'gradientUnits':'userSpaceOnUse' });
-			def.innerHTML =
-                  '<stop stop-color="#FF5B99" offset="0%"></stop>' +
-                  '<stop stop-color="#FF5447" offset="50%"></stop>' +
-                  '<stop stop-color="#FF7B21" offset="100%"></stop>';
-            defs.appendChild(def);
-            */
-
       var def = document.createElementNS(xmlns, "text");
       def.setAttributeNS(null, "id", id);
       svgAttrs(def, {
@@ -3645,12 +3632,6 @@ window.onload = function () {
   document.addEventListener("touchstart", ontouch, { passive: false });
   document.addEventListener("touchmove",  ontouch, { passive: false });
   document.addEventListener("touchend",   ontouch, { passive: false });
-
-  /*
-    document.oncontextmenu = function(e){
-    	return false;
-    };
-    */
 
   init();
 };
