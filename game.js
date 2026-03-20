@@ -55,35 +55,44 @@ const TEXT_CONFIG = {
 function J() {
   this.B = function (e) {
     for (var f = 0; 24 > f; f++) this[String.fromCharCode(97 + f)] = e[f] || 0;
-    0.01 > this.c && (this.c = 0.01);
+    if (0.01 > this.c) { this.c = 0.01; }
     e = this.b + this.c + this.e;
-    0.18 > e && ((e = 0.18 / e), (this.b *= e), (this.c *= e), (this.e *= e));
+    if (0.18 > e) {
+      e = 0.18 / e;
+      this.b *= e;
+      this.c *= e;
+      this.e *= e;
+    }
   };
 }
-var W = new (function () {
-  this.A = new J();
+var W = (function () {
+  var self = {};
+  self.A = new J();
   var e, f, d, h, l, z, K, L, M, A, m, N;
-  this.reset = function () {
-    var b = this.A;
+  self.reset = function () {
+    var b = self.A;
     h = 100 / (b.f * b.f + 0.001);
     l = 100 / (b.g * b.g + 0.001);
     z = 1 - b.h * b.h * b.h * 0.01;
     K = -b.i * b.i * b.i * 1e-6;
-    b.a || ((m = 0.5 - b.n / 2), (N = 5e-5 * -b.o));
+    if (!b.a) {
+      m = 0.5 - b.n / 2;
+      N = 5e-5 * -b.o;
+    }
     L = 1 + b.l * b.l * (0 < b.l ? -0.9 : 10);
     M = 0;
     A = 1 == b.m ? 0 : (1 - b.m) * (1 - b.m) * 2e4 + 32;
   };
-  this.D = function () {
-    this.reset();
-    var b = this.A;
+  self.D = function () {
+    self.reset();
+    var b = self.A;
     e = b.b * b.b * 1e5;
     f = b.c * b.c * 1e5;
     d = b.e * b.e * 1e5 + 12;
     return 3 * (((e + f + d) / 3) | 0);
   };
-  this.C = function (b, O) {
-    var a = this.A,
+  self.C = function (b, O) {
+    var a = self.A,
       P = 1 != a.s || a.v,
       r = a.v * a.v * 0.1,
       Q = 1 + 3e-4 * a.w,
@@ -103,12 +112,11 @@ var W = new (function () {
       F = e,
       da = 1 / e,
       ea = 1 / f,
-      fa = 1 / d,
-      a = (5 / (1 + a.u * a.u * 20)) * (0.01 + n);
-    0.8 < a && (a = 0.8);
-    for (
-      var a = 1 - a,
-        G = !1,
+      fa = 1 / d;
+    var a2 = (5 / (1 + a.u * a.u * 20)) * (0.01 + n);
+    if (0.8 < a2) { a2 = 0.8; }
+
+    var G = !1,
         U = 0,
         v = 0,
         w = 0,
@@ -127,22 +135,23 @@ var W = new (function () {
         C = Array(1024),
         y = Array(32),
         k = C.length;
-      k--;
-    )
+
+    a2 = 1 - a2;
+    for (; k--; )
       C[k] = 0;
     for (k = y.length; k--; ) y[k] = 2 * Math.random() - 1;
     for (k = 0; k < O; k++) {
       if (G) return k;
-      S && ++V >= S && ((V = 0), this.reset());
-      A && ++M >= A && ((A = 0), (h *= L));
+      if (S && ++V >= S) { V = 0; self.reset(); }
+      if (A && ++M >= A) { A = 0; h *= L; }
       z += K;
       h *= z;
-      h > l && ((h = l), 0 < $ && (G = !0));
+      if (h > l) { h = l; if (0 < $) { G = !0; } }
       g = h;
-      0 < T && ((I += ca), (g *= 1 + Math.sin(I) * T));
+      if (0 < T) { I += ca; g *= 1 + Math.sin(I) * T; }
       g |= 0;
-      8 > g && (g = 8);
-      E || ((m += N), 0 > m ? (m = 0) : 0.5 < m && (m = 0.5));
+      if (8 > g) { g = 8; }
+      if (!E) { m += N; if (0 > m) { m = 0; } else if (0.5 < m) { m = 0.5; } }
       if (++v > F)
         switch (((v = 0), ++U)) {
           case 1:
@@ -162,10 +171,10 @@ var W = new (function () {
           w = 1 - v * fa;
           break;
         case 3:
-          ((w = 0), (G = !0));
+          w = 0; G = !0;
       }
-      R && ((D += aa), (s = D | 0), 0 > s ? (s = -s) : 1023 < s && (s = 1023));
-      P && Q && ((r *= Q), 1e-5 > r ? (r = 1e-5) : 0.1 < r && (r = 0.1));
+      if (R) { D += aa; s = D | 0; if (0 > s) { s = -s; } else if (1023 < s) { s = 1023; } }
+      if (P && Q) { r *= Q; if (1e-5 > r) { r = 1e-5; } else if (0.1 < r) { r = 0.1; } }
       q = 0;
       for (var ga = 8; ga--; ) {
         p++;
@@ -187,15 +196,17 @@ var W = new (function () {
           case 3:
             c = y[Math.abs(((32 * p) / g) | 0)];
         }
-        P &&
-          ((x = u),
-          (n *= X),
-          0 > n ? (n = 0) : 0.1 < n && (n = 0.1),
-          Y ? ((t += (c - u) * n), (t *= a)) : ((u = c), (t = 0)),
-          (u += t),
-          (B += u - x),
-          (c = B *= 1 - r));
-        R && ((C[H % 1024] = c), (c += C[(H - s + 1024) % 1024]), H++);
+        if (P) {
+          x = u;
+          n *= X;
+          if (0 > n) { n = 0; } else if (0.1 < n) { n = 0.1; }
+          if (Y) { t += (c - u) * n; t *= a2; } else { u = c; t = 0; }
+          u += t;
+          B += u - x;
+          B *= 1 - r;
+          c = B;
+        }
+        if (R) { C[H % 1024] = c; c += C[(H - s + 1024) % 1024]; H++; }
         q += c;
       }
       q = 0.125 * q * w * Z;
@@ -203,13 +214,14 @@ var W = new (function () {
     }
     return O;
   };
+  return self;
 })();
 window.jsfxr = function (e) {
   W.A.B(e);
   var f = W.D();
   e = new Uint8Array(4 * (((f + 1) / 2) | 0) + 44);
-  var f = 2 * W.C(new Uint16Array(e.buffer, 44), f),
-    d = new Uint32Array(e.buffer, 0, 44);
+  f = 2 * W.C(new Uint16Array(e.buffer, 44), f);
+  var d = new Uint32Array(e.buffer, 0, 44);
   d[0] = 1179011410;
   d[1] = f + 36;
   d[2] = 1163280727;
@@ -221,9 +233,10 @@ window.jsfxr = function (e) {
   d[8] = 1048578;
   d[9] = 1635017060;
   d[10] = f;
-  for (var f = f + 44, d = 0, h = "data:audio/wav;base64,"; d < f; d += 3)
-    var l = (e[d] << 16) | (e[d + 1] << 8) | e[d + 2],
-      h =
+  var h = "data:audio/wav;base64,";
+  for (f = f + 44, d = 0; d < f; d += 3) {
+    var l = (e[d] << 16) | (e[d + 1] << 8) | e[d + 2];
+    h =
         h +
         ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[
           l >> 18
@@ -237,6 +250,7 @@ window.jsfxr = function (e) {
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[
             l & 63
           ]);
+  }
   return h;
 };
 /*
@@ -275,9 +289,11 @@ var aa;
         ? sound[Math.floor(Math.random() * sound.length)]
         : sound[0];
     soundData.pool[soundData.tick].play();
-    soundData.tick < soundData.count - 1
-      ? soundData.tick++
-      : (soundData.tick = 0);
+    if (soundData.tick < soundData.count - 1) {
+      soundData.tick++;
+    } else {
+      soundData.tick = 0;
+    }
   };
 
   aa = new ArcadeAudio();
@@ -1721,10 +1737,10 @@ window.onload = function () {
 
     // Check for checkpoint crossing
     if (checkPoints && checkPoints.length > 0) {
-      for (var i = currentCheckpointLevel; i < checkPoints.length; i++) {
-        var checkpointRow = checkPoints[i];
+      for (var j = currentCheckpointLevel; j < checkPoints.length; j++) {
+        var checkpointRow = checkPoints[j];
         if (player.row >= checkpointRow) {
-          currentCheckpointLevel = i + 1;
+          currentCheckpointLevel = j + 1;
           // === SCORE: Level bonus ===
           var levelBonus = 100 * currentCheckpointLevel;
           currentScore += levelBonus;
@@ -1759,10 +1775,10 @@ window.onload = function () {
     //update checkboard based on progress
     var topRow = Math.floor(progress) + NUM_CELLS_DISPLAYED;
     if (!lastTime || topRowDisplayed < topRow) {
-      var row, colIndex, changes;
+      var row, colIndex, changes, i;
       //Destroy out of view rows
       for (
-        var i = topRow - NUM_CELLS_DISPLAYED - 5;
+        i = topRow - NUM_CELLS_DISPLAYED - 5;
         i > topRowDisplayed - NUM_CELLS_DISPLAYED - 5;
         i--
       ) {
@@ -3788,10 +3804,10 @@ var Stats = function () {
   msDiv.appendChild(msGraph);
 
   while (msGraph.children.length < 74) {
-    var bar = document.createElement("span");
-    bar.style.cssText =
+    var msBar = document.createElement("span");
+    msBar.style.cssText =
       "width:1px;height:30px;float:left;background-color:#131";
-    msGraph.appendChild(bar);
+    msGraph.appendChild(msBar);
   }
 
   var setMode = function (value) {

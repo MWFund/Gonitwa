@@ -1,0 +1,7 @@
+{
+  "esversion": 8,
+  "browser": true,
+  "elision": true,
+  "jquery": true,
+  "laxbreak": true
+}
