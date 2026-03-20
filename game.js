@@ -3628,11 +3628,15 @@ window.onload = function () {
     // Account for CSS scale transform on #root
     var rootEl = document.getElementById("root");
     var scale = 1;
+    var offsetLeft = 0;
     if (rootEl) {
       var rect = rootEl.getBoundingClientRect();
       scale = rect.width / SIZE; // actual rendered width / logical width
+      offsetLeft = rect.left;
+    } else if (root) {
+      offsetLeft = root.offsetLeft;
     }
-    mouse.x = (e.clientX - (rootEl ? rootEl.getBoundingClientRect().left : root.offsetLeft)) / scale;
+    mouse.x = (e.clientX - offsetLeft) / scale;
     mouse.y = e.clientY / scale;
   };
 
