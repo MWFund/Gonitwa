@@ -1368,10 +1368,12 @@ window.onload = function () {
 
     if (piece.showThreat) {
       //not very subtle but does the job, just scan everything in a wide range, we ensure it won't be a problem when building the checkboard
-      for (var i = piece.row - NUM_CELLS; i < piece.row + NUM_CELLS; i++) {
+      var startRow = Math.max(0, piece.row - NUM_CELLS);
+      var endRow = piece.row + NUM_CELLS;
+      for (var i = startRow; i < endRow; i++) {
         var rowContent = checkBoard[i];
         if (rowContent) {
-          for (var j = piece.col - NUM_CELLS; j < piece.col + NUM_CELLS; j++) {
+          for (var j = 0; j < NUM_CELLS; j++) {
             if (rowContent[j]) {
               rowContent[j].showThreat = false;
             }
