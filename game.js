@@ -1590,7 +1590,7 @@ window.onload = function () {
   }
 
   function processInput() {
-    if (topRowDisplayed <= 0) { return; }
+    if (topRowDisplayed < 0) { return; }
     if (player.invalid || intro) { return; } // can't move during animation
 
     if (keys.up === 1 || keys.down === 1 || keys.left === 1 || keys.right === 1) {
