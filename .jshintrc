@@ -3,5 +3,8 @@
   "browser": true,
   "elision": true,
   "jquery": true,
-  "laxbreak": true
+  "laxbreak": true,
+  "unused": true,
+  "undef": true,
+  "predef": ["jsfxr", "confirm", "showFloatingScore", "onGameEnd", "module", "window", "document", "console", "Math", "Date", "Uint8Array", "Uint16Array", "Uint32Array", "Audio", "requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "clearTimeout", "setInterval", "clearInterval", "localStorage", "MutationObserver"]
 }

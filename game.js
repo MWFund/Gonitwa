@@ -421,11 +421,6 @@ window.onload = function () {
   var Math = win.Math;
 
   var PI = Math.PI;
-  var sqrt = Math.sqrt;
-  var rand = Math.random;
-
-  var YES = true;
-  var NO = false;
 
   //------------------------------------------------------------------------------------------------------------------
   // sizes and DOM
@@ -440,18 +435,11 @@ window.onload = function () {
 
   var DIALOG_MARGIN = 6;
 
-  var screenWidth;
-  var screenHeight;
-  var screenMinSize;
-
   var bgCanvas = makeCanvas(SIZE, SIZE, "bg");
   var bgCtx = getContext(bgCanvas);
 
   var shadowCanvas = makeCanvas(SIZE, SIZE, "shadow");
   var shadowCtx = getContext(shadowCanvas);
-
-  var skyCanvas = makeCanvas(SIZE, 2 * SIZE, "sky");
-  var skyCtx = getContext(skyCanvas);
 
   //------------------------------------------------------------------------------------------------------------------
   // game logic
@@ -509,7 +497,6 @@ window.onload = function () {
   var gameScale = 1.8;
   var autoPieceEnabled = false;
   var introStartTime;
-  var introDurationSec = 5;
   var perspectiveProgress = 0;
   var introProgress = 0;
   var introStep = -1;
@@ -517,7 +504,6 @@ window.onload = function () {
   var dialogBox;
   var dialogSpeakerText;
   var dialogText;
-  var dialogHint;
 
   var checkText;
 
@@ -536,10 +522,6 @@ window.onload = function () {
   //other SCG ids
   var ENEMY_FILTER = "ef";
   var CHECK_TEXT = "ct";
-  var CHECK_GRADIENT = "cg";
-
-  var DANGER = "*";
-  var CHECK_POINT = "#";
 
   //------------------------------------------------------------------------------------------------------------------
   // initialization
@@ -798,26 +780,6 @@ window.onload = function () {
     showStartMenu();
   }
 
-  function restartFromCheckpoint() {
-    // Restart from current checkpoint level
-    raf = false; // Stop game loop
-
-    // Remove current game elements
-    destroyCheckBoard();
-
-    // Reinitialize checkboard from current checkpoint
-    initCheckBoard(currentCheckpointLevel);
-
-    // Update level panel
-    updateLevelPanel();
-
-    // Resume game
-    raf = true;
-    gameIsOver = false;
-    lastTime = Date.now();
-    requestAnimationFrame(tic);
-  }
-
   function initCheckBoard(startCheckPointIndex) {
     if (checkBoard) {
       destroyCheckBoard();
@@ -1069,8 +1031,6 @@ window.onload = function () {
 
     //Create a block of 8/8
     function block() {
-      var hasStars = false;
-      var piece;
       var args = Array.prototype.slice.call(arguments);
       var options;
       if (typeof args[0] == "object") {
@@ -1239,123 +1199,45 @@ window.onload = function () {
   }
 
   function getThreateningCell(row, col) {
-    var threateningCell;
+    var cell;
     //land mine
-    threateningCell = getCellWithPieceAt(row, col, LAND_MINE);
-    if (threateningCell) {
-      return threateningCell;
-    }
+    cell = getCellWithPieceAt(row, col, LAND_MINE);
+    if (cell) return cell;
+
     //pawns
-    threateningCell =
-      getCellWithPieceAt(row + 1, col - 1, PAWN) ||
-      getCellWithPieceAt(row + 1, col + 1, PAWN);
-    if (threateningCell) {
-      return threateningCell;
-    }
-    //ROOK
-    var i, j, cell;
-    //Check left
-    for (j = col - 1; j >= 0; j--) {
-      cell = getCellWithPieceAt(row, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == ROOK) {
-          return cell;
-        } else {
+    cell = getCellWithPieceAt(row + 1, col - 1, PAWN) ||
+           getCellWithPieceAt(row + 1, col + 1, PAWN);
+    if (cell) return cell;
+
+    function checkRay(dRow, dCol, type) {
+      for (var i = 1; i <= NUM_CELLS; i++) {
+        var c = getCellWithPieceAt(row + dRow * i, col + dCol * i);
+        if (c && c.piece) {
+          if (c.piece.type === type) return c;
           break;
         }
       }
-    }
-    //Check right
-    for (j = col + 1; j <= NUM_CELLS; j++) {
-      cell = getCellWithPieceAt(row, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == ROOK) {
-          return cell;
-        } else {
-          break;
-        }
-      }
-    }
-    //Check up
-    for (i = row + 1; i <= row + NUM_CELLS; i++) {
-      cell = getCellWithPieceAt(i, col);
-      if (cell && cell.piece) {
-        if (cell.piece.type == ROOK) {
-          return cell;
-        } else {
-          break;
-        }
-      }
-    }
-    //Check down
-    for (i = row - 1; i >= row - NUM_CELLS; i--) {
-      cell = getCellWithPieceAt(i, col);
-      if (cell && cell.piece) {
-        if (cell.piece.type == ROOK) {
-          return cell;
-        } else {
-          break;
-        }
-      }
+      return null;
     }
 
-    //BISHOP
-    //diag bottom left
-    for (j = col - 1, i = row - 1; j >= 0; j--, i--) {
-      cell = getCellWithPieceAt(i, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == BISHOP) {
-          return cell;
-        } else {
-          break;
-        }
-      }
-    }
-    //diag bottom right
-    for (j = col + 1, i = row - 1; j < NUM_CELLS; j++, i--) {
-      cell = getCellWithPieceAt(i, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == BISHOP) {
-          return cell;
-        } else {
-          break;
-        }
-      }
-    }
-    //diag top left
-    for (j = col - 1, i = row + 1; j >= 0; j--, i++) {
-      cell = getCellWithPieceAt(i, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == BISHOP) {
-          return cell;
-        } else {
-          break;
-        }
-      }
-    }
-    //diag top right
-    for (j = col + 1, i = row + 1; j < NUM_CELLS; j++, i++) {
-      cell = getCellWithPieceAt(i, j);
-      if (cell && cell.piece) {
-        if (cell.piece.type == BISHOP) {
-          return cell;
-        } else {
-          break;
-        }
-      }
+    //ROOK (straight)
+    cell = checkRay(0, -1, ROOK) || checkRay(0, 1, ROOK) ||
+           checkRay(1, 0, ROOK) || checkRay(-1, 0, ROOK);
+    if (cell) return cell;
+
+    //BISHOP (diagonal)
+    cell = checkRay(-1, -1, BISHOP) || checkRay(-1, 1, BISHOP) ||
+           checkRay(1, -1, BISHOP) || checkRay(1, 1, BISHOP);
+    if (cell) return cell;
+
+    //KNIGHT
+    var knightMoves = [[2,-1],[-2,-1],[2,1],[-2,1],[1,-2],[-1,-2],[1,2],[-1,2]];
+    for (var i = 0; i < knightMoves.length; i++) {
+      cell = getCellWithPieceAt(row + knightMoves[i][0], col + knightMoves[i][1], KNIGHT);
+      if (cell) return cell;
     }
 
-    threateningCell =
-      getCellWithPieceAt(row + 2, col - 1, KNIGHT) ||
-      getCellWithPieceAt(row - 2, col - 1, KNIGHT) ||
-      getCellWithPieceAt(row + 2, col + 1, KNIGHT) ||
-      getCellWithPieceAt(row - 2, col + 1, KNIGHT) ||
-      getCellWithPieceAt(row + 1, col - 2, KNIGHT) ||
-      getCellWithPieceAt(row - 1, col - 2, KNIGHT) ||
-      getCellWithPieceAt(row + 1, col + 2, KNIGHT) ||
-      getCellWithPieceAt(row - 1, col + 2, KNIGHT);
-
-    return threateningCell;
+    return null;
   }
 
   function getCellWithPieceAt(row, col, type) {
@@ -2121,7 +2003,6 @@ window.onload = function () {
   var BG_COLOR = "#193441";
   var CELL_COLOR_1 = "#D1DBBD";
   var CELL_COLOR_2 = "#3E606F";
-  var STROKE_COLOR = "#D1DBBD";
   var ROLLOVER_COLOR = "#794";
   var PIECE_FILL_COLOR = "#eee";
   var PIECE_STROKE_COLOR = "#555";
@@ -2381,7 +2262,6 @@ window.onload = function () {
   function computeCellPos(row, col, res) {
     res = res || computeCellPos.res;
     project((col + 0.5) / NUM_CELLS, (row - progress + 0.5) / NUM_CELLS);
-    var thresholdDown = -0.02;
     var thresholdUp = 0.02;
     var opacity = 1;
     if (project.res.y < THRESHOLD_DOWN) {
@@ -2454,12 +2334,6 @@ window.onload = function () {
     return res;
   }
 
-  function ellipseEq(x, a, b) {
-    // x²/a² + y²/b² = 1
-    // y = sqrt( (1-x²/a²)*b² )
-    return Math.sqrt((1 - (x * x) / (a * a)) * b * b);
-  }
-
   reverseProject.res = {};
 
   function reverseProject(x, y, res) {
@@ -2512,67 +2386,6 @@ window.onload = function () {
     root.appendChild(shadowCanvas);
   }
 
-  function initSkyCanvas() {
-    var shadowSize = SIZE * 0.02;
-    skyCanvas.width = SIZE;
-    skyCanvas.height = HORIZON_Y + shadowSize;
-
-    var ctx = skyCtx;
-    ctx.clearRect(0, 0, SIZE, SIZE);
-
-    ctx.save();
-    //Draw sky
-    ctx.fillStyle = "#FF8601";
-    ctx.beginPath();
-    ctx.rect(0, 0, SIZE, HORIZON_Y);
-    ctx.fill();
-    ctx.clip();
-    //Draw sun
-    ctx.fillStyle = "#FFE7CA";
-    var sunRadius = SIZE / 4;
-    ctx.beginPath();
-    ctx.arc(SIZE / 2, HORIZON_Y + 0.3 * sunRadius, sunRadius, 0, PI, true);
-    ctx.fill();
-    ctx.restore();
-    //Draw Mountains
-    ctx.beginPath();
-    ctx.fillStyle = "rgb(10,20,25)";
-
-    var mountainMaxHeight = 40;
-    var points = [
-      0, 0.7, 0.1, 0.3, 0.2, 1, 0.3, 0.5, 0.35, 0.8, 0.42, 0.5, 0.55, 0.9, 0.7,
-      0.45, 0.8, 1.1, 0.88, 0.4, 1, 0.8,
-    ];
-    var mountainX = 0;
-    for (var i = 0; i < points.length; i += 2) {
-      var x = points[i] * SIZE;
-      var y = HORIZON_Y - mountainMaxHeight * points[i + 1];
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.lineTo(SIZE, HORIZON_Y);
-    ctx.lineTo(0, HORIZON_Y);
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(0, HORIZON_Y);
-    var grd = ctx.createLinearGradient(0, 0, 0, shadowSize);
-    var c = "rgba(10,20,25,";
-    var c2 = ")";
-    grd.addColorStop(0, c + 1 + c2);
-    grd.addColorStop(1, c + 0 + c2);
-
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, SIZE, shadowSize);
-    ctx.restore();
-
-    root.appendChild(skyCanvas);
-  }
-
   function makeCanvas(width, height, id) {
     var canvas = document.createElement("canvas");
     if (id) canvas.id = id;
@@ -2583,23 +2396,6 @@ window.onload = function () {
 
   function getContext(canvas) {
     return canvas.getContext("2d");
-  }
-
-  function style(ctx, fill, stroke, lineWidth) {
-    if (fill) ctx.fillStyle = fill;
-    if (stroke) ctx.strokeStyle = stroke;
-    if (lineWidth) ctx.lineWidth = lineWidth;
-  }
-
-  // c: color string or canvas/image
-  function fillRect(ctx, x, y, w, h, c) {
-    if (c) {
-      if (c.width) {
-        c = ctx.createPattern(c, "repeat");
-      }
-      style(ctx, c);
-    }
-    ctx.fillRect(x, y, w, h);
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -3178,17 +2974,6 @@ window.onload = function () {
       return circle;
     }
 
-    function makeRect(x, y, w, h) {
-      var rect = document.createElementNS(xmlns, "rect");
-      svgAttrs(rect, {
-        x: svgFloat(x - OX),
-        y: svgFloat(y - OY),
-        width: svgFloat(w),
-        height: svgFloat(h),
-      });
-      return rect;
-    }
-
     function makeEllipse(cx, cy, rx, ry) {
       var ellipse = document.createElementNS(xmlns, "ellipse");
       svgAttrs(ellipse, {
@@ -3685,7 +3470,7 @@ window.onload = function () {
   }
 
   if (!window.requestAnimationFrame)
-    window.requestAnimationFrame = function (callback, element) {
+    window.requestAnimationFrame = function (callback) {
       var currTime = new Date().getTime();
       var timeToCall = Math.max(0, 16 - (currTime - lastTime));
       var id = window.setTimeout(function () {
