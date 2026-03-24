@@ -1,0 +1,17 @@
+--- game.js
++++ game.js
+@@ -3836,5 +3836,13 @@
+ };
+
+ if (typeof module === "object") {
+-  module.exports = Stats;
++  module.exports = {
++    Stats: Stats,
++    quadraticEq: function(x, a, b, c) {
++      return a * x * x + b * x + c;
++    },
++    reverseQuadraticEq: function(y, a, b, c, pos) {
++      return pos ? (-b + Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a) : (-b - Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a);
++    }
++  };
+ }
