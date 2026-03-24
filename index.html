@@ -103,6 +103,34 @@
         }
       }
 
+      /* Laptops and Chromebooks (e.g. 1366x768) */
+      @media (min-width: 1024px) and (max-height: 800px) {
+        :root {
+          --space-3xl: 48px;
+          --space-xl: 32px;
+          --space-lg: 24px;
+          --text-display: clamp(2rem, 5vw + 1rem, 3.5rem);
+        }
+        .start-menu {
+          align-items: flex-start;
+          padding: var(--space-md) var(--space-xl);
+        }
+        .start-menu-layout {
+          gap: var(--space-xl);
+        }
+        .hero-description {
+          font-size: var(--text-base);
+          max-width: 100%;
+        }
+        .tactile-panel {
+          padding: var(--space-md);
+        }
+        .piece-btn {
+          font-size: var(--text-lg);
+          padding: var(--space-sm);
+        }
+      }
+
       /* Left column */
       .hero-section {
         display: flex; flex-direction: column; gap: var(--space-md);
