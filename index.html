@@ -841,10 +841,10 @@
       var _scorePoller = null;
       function startScorePoller() {
         if (_scorePoller) clearInterval(_scorePoller);
+        var el = document.getElementById('score-hud-value');
         _scorePoller = setInterval(function() {
           if (typeof window.getScore === 'function') {
             var s = window.getScore();
-            var el = document.getElementById('score-hud-value');
             if (el && parseInt(el.textContent) !== s) {
               el.textContent = s;
               el.classList.add('pop');
