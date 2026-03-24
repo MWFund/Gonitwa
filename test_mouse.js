@@ -7,7 +7,7 @@ const puppeteer = require('puppeteer');
   page.on('console', msg => console.log('BROWSER:', msg.text()));
 
   // Navigate to the local page
-  await page.goto('file://e:/chess_project/Gonitwa/index.html');
+  await page.goto('file:///app/index.html');
   
   // Wait for the game to initialize
   await new Promise(r => setTimeout(r, 1000));

@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer');
   
   page.on('console', msg => console.log('BROWSER:', msg.text()));
 
-  await page.goto('file://e:/chess_project/Gonitwa/index.html');
+  await page.goto('file:///app/index.html');
   await new Promise(r => setTimeout(r, 1000));
   await page.keyboard.press('Space');
   await new Promise(r => setTimeout(r, 500));
