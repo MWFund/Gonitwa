@@ -2894,7 +2894,6 @@ window.onload = function () {
       makeDef(
         LAND_MINE,
         [
-          //makePath(['M',[2,8],'Q',[5,10],[8,8],'L',[8.5,6],'L',[7,7],'L',[7,5],'L',[6,6],'L',[5,4.5],'L',[4,6],'L',[3,5],'L',[3,7],'L',[1.5,6],'L',[2,8]])
           makePike(2, 9.5),
           makePike(5, 9),
           makePike(8, 10),
