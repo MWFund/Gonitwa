@@ -909,6 +909,25 @@
       window.showFloatingScore = showFloatingScore;
 
       // ------ Game end callback (called by game.js) ------
+      var _modalEls = null;
+      function getModalEls() {
+        if (!_modalEls) {
+          _modalEls = {
+            badge: document.getElementById('modal-badge'),
+            title: document.getElementById('modal-title'),
+            subtitle: document.getElementById('modal-subtitle'),
+            scoreBig: document.getElementById('modal-score'),
+            pbBadge: document.getElementById('personal-best-badge'),
+            breakdown: document.getElementById('modal-breakdown'),
+            playerNameEl: document.getElementById('modal-player-name')
+          };
+          if (_modalEls.subtitle) {
+             _modalEls.subtitleStrong = _modalEls.subtitle.querySelector('strong');
+          }
+        }
+        return _modalEls;
+      }
+
       function onGameEnd(isWin, finalScore) {
         stopScorePoller();
         var level = (typeof window.getCurrentCheckpointLevel === 'function') ? window.getCurrentCheckpointLevel() : 1;
@@ -916,23 +935,17 @@
         renderLeaderboard();
 
         // Fill modal
-        var badge   = document.getElementById('modal-badge');
-        var title   = document.getElementById('modal-title');
-        var subtitle = document.getElementById('modal-subtitle');
-        var scoreBig = document.getElementById('modal-score');
-        var pbBadge = document.getElementById('personal-best-badge');
-        var breakdown = document.getElementById('modal-breakdown');
-        var playerNameEl = document.getElementById('modal-player-name');
+        var els = getModalEls();
 
-        if (badge)   { badge.textContent = isWin ? '🎉' : '💀'; badge.className = 'modal-result-badge ' + (isWin ? 'win' : 'loss'); }
-        if (title)   { title.textContent = isWin ? 'Brawo!' : 'Szach-mat!'; }
-        if (playerNameEl) playerNameEl.textContent = currentPlayerName;
-        if (subtitle) subtitle.querySelector('strong').textContent = currentPlayerName;
-        if (scoreBig) scoreBig.textContent = finalScore;
-        if (pbBadge)  pbBadge.style.display = isPersonalBest ? 'inline-flex' : 'none';
+        if (els.badge)   { els.badge.textContent = isWin ? '🎉' : '💀'; els.badge.className = 'modal-result-badge ' + (isWin ? 'win' : 'loss'); }
+        if (els.title)   { els.title.textContent = isWin ? 'Brawo!' : 'Szach-mat!'; }
+        if (els.playerNameEl) els.playerNameEl.textContent = currentPlayerName;
+        if (els.subtitleStrong) els.subtitleStrong.textContent = currentPlayerName;
+        if (els.scoreBig) els.scoreBig.textContent = finalScore;
+        if (els.pbBadge)  els.pbBadge.style.display = isPersonalBest ? 'inline-flex' : 'none';
 
         // Build breakdown
-        if (breakdown) {
+        if (els.breakdown) {
           var rawBreakdown = (typeof window.getScoreBreakdown === 'function') ? window.getScoreBreakdown() : [];
           // Aggregate
           var aggr = {};
@@ -947,12 +960,14 @@
             var countStr = e.count > 1 ? ' ×' + e.count : '';
             return '<div class="breakdown-row"><span class="breakdown-label">' + e.label + countStr + '</span><span class="breakdown-val">+' + e.total + ' pkt</span></div>';
           });
-          breakdown.innerHTML = rows.length ? rows.join('') : '';
+          els.breakdown.innerHTML = rows.length ? rows.join('') : '';
         }
 
         // Show modal
-        var modal = document.getElementById('score-modal');
-        if (modal) { modal.classList.remove('hidden'); }
+        if (!els.modal) {
+          els.modal = document.getElementById('score-modal');
+        }
+        if (els.modal) { els.modal.classList.remove('hidden'); }
       }
       window.onGameEnd = onGameEnd;
 
