@@ -2450,12 +2450,6 @@ window.onload = function () {
     return res;
   }
 
-  function ellipseEq(x, a, b) {
-    // x²/a² + y²/b² = 1
-    // y = sqrt( (1-x²/a²)*b² )
-    return Math.sqrt((1 - (x * x) / (a * a)) * b * b);
-  }
-
   reverseProject.res = {};
 
   function reverseProject(x, y, res) {
@@ -2464,18 +2458,6 @@ window.onload = function () {
     var scale = quadraticEq(res.y, A_S, B_S, C_S);
     res.x = (x - (1 - scale) / 2) / scale;
     return res;
-  }
-
-  function quadraticEq(x, a, b, c) {
-    return a * x * x + b * x + c;
-  }
-
-  function reverseQuadraticEq(y, a, b, c, pos) {
-    if (pos) {
-      return (-b + Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a);
-    } else {
-      return (-b - Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a);
-    }
   }
 
   //------------------------------------------------------------------------------------------------------------------
@@ -3696,6 +3678,24 @@ var ste;
  * @author mrdoob / http://mrdoob.com/
  */
 
+function ellipseEq(x, a, b) {
+  // x²/a² + y²/b² = 1
+  // y = sqrt( (1-x²/a²)*b² )
+  return Math.sqrt((1 - (x * x) / (a * a)) * b * b);
+}
+
+function quadraticEq(x, a, b, c) {
+  return a * x * x + b * x + c;
+}
+
+function reverseQuadraticEq(y, a, b, c, pos) {
+  if (pos) {
+    return (-b + Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a);
+  } else {
+    return (-b - Math.sqrt(b * b - 4 * a * (c - y))) / (2 * a);
+  }
+}
+
 var Stats = function () {
   var startTime = Date.now(),
     prevTime = startTime;
@@ -3838,4 +3838,7 @@ var Stats = function () {
 
 if (typeof module === "object") {
   module.exports = Stats;
+  module.exports.ellipseEq = ellipseEq;
+  module.exports.quadraticEq = quadraticEq;
+  module.exports.reverseQuadraticEq = reverseQuadraticEq;
 }
