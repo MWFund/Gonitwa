@@ -713,7 +713,7 @@ window.onload = function () {
       btn.classList.toggle("active");
       if (autoPieceEnabled) {
         var pieces = ["king", "queen", "rook", "bishop", "knight", "pawn"];
-        var randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
+        var randomPiece = pieces[Math.floor((window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * pieces.length)];
         setPlayerPiece(randomPiece);
       }
     }
