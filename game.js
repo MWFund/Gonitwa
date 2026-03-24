@@ -2121,6 +2121,7 @@ window.onload = function () {
   var PIECE_FILL_COLOR = "#eee";
   var PIECE_STROKE_COLOR = "#555";
   var INVALID_CELL_COLOR_RGB = "255,0,0";
+  var INVALID_CELL_COLOR_FILL = "rgba(" + INVALID_CELL_COLOR_RGB + ",0.5)";
   var CHECK_POINT_COLOR = "rgba(93, 255, 182, 0.56)";
 
   function render() {
@@ -2340,7 +2341,7 @@ window.onload = function () {
         if (row && row[j]) {
           var cell = row[j];
           if (cell.showThreat) {
-            bgCtx.fillStyle = "rgba(" + INVALID_CELL_COLOR_RGB + ",0.5)";
+            bgCtx.fillStyle = INVALID_CELL_COLOR_FILL;
             bgCtx.fill();
           }
           if (cell.checkPoint) {
