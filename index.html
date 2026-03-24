@@ -830,7 +830,11 @@
         var hv = document.getElementById('score-hud-value');
         if (hv) hv.textContent = '0';
         // Delegate to game.js exported function
-        if (typeof startGame === 'function') startGame();
+        if (typeof window.startGame === 'function') {
+          window.startGame();
+        } else {
+          console.error("game.js has not exported window.startGame()");
+        }
       }
 
       // ------ Live score sync (poll from game.js) ------

@@ -1109,9 +1109,35 @@ window.onload = function () {
         }
       }
     }
+    
+    // Initialize player
+    var PIECE_TYPE_MAP = {
+      king:   HERO_KING,
+      queen:  QUEEN,
+      rook:   ROOK,
+      bishop: BISHOP,
+      knight: KNIGHT,
+      pawn:   PAWN
+    };
+    player = {
+      row: 5,
+      col: 3,
+      opacity: 1,
+      scale: 1,
+      player: true,
+      piece: PIECE_TYPE_MAP[selectedPiece] || HERO_KING
+    };
+    addSvgShape(player);
+    playerAnimDuration = 0.2;
+    playerInvalidDuration = 0.3;
+    mouse.click = false;
   }
 
   function destroyCheckBoard() {
+    if (player && player.shape) {
+      removeSvgShape(player);
+      player = null;
+    }
     for (var row in checkBoard) {
       if (checkBoard[row]) {
         for (var col in checkBoard[row]) {
@@ -1368,12 +1394,10 @@ window.onload = function () {
 
     if (piece.showThreat) {
       //not very subtle but does the job, just scan everything in a wide range, we ensure it won't be a problem when building the checkboard
-      var startRow = Math.max(0, piece.row - NUM_CELLS);
-      var endRow = piece.row + NUM_CELLS;
-      for (var i = startRow; i < endRow; i++) {
+      for (var i = piece.row - NUM_CELLS; i < piece.row + NUM_CELLS; i++) {
         var rowContent = checkBoard[i];
         if (rowContent) {
-          for (var j = 0; j < NUM_CELLS; j++) {
+          for (var j = piece.col - NUM_CELLS; j < piece.col + NUM_CELLS; j++) {
             if (rowContent[j]) {
               rowContent[j].showThreat = false;
             }
@@ -1415,7 +1439,7 @@ window.onload = function () {
       //console.log('renderTime', now-t);
     }
     mouse.click = false;
-    
+
     if (window.ste) ste();
 
     if (raf) {
@@ -1593,10 +1617,6 @@ window.onload = function () {
     if (topRowDisplayed <= 0) { return; }
     if (player.invalid || intro) { return; } // can't move during animation
 
-    if (keys.up === 1 || keys.down === 1 || keys.left === 1 || keys.right === 1) {
-      console.log('Key pressed', keys);
-    }
-
     var dx = 0;
     var dy = 0;
     if (!keysBlockedUntilAllUp) {
@@ -1618,15 +1638,11 @@ window.onload = function () {
 
         // Resolve the target cell according to piece movement rules
         var target = resolveKeyboardMove(dx, dy);
-        console.log('Keyboard move resolved to', target, 'from', player.row, player.col);
         if (target) {
           // Final validation (also catches boundary/path issues)
           var tr = target[0], tc = target[1];
           if (isValidPlayerMove(player.row, player.col, tr, tc)) {
-            console.log('Move is valid, calling movePlayer');
             movePlayer(tr, tc);
-          } else {
-            console.log('Move is invalid according to isValidPlayerMove');
           }
           // If move was invalid (e.g. pawn tries to go backward), don't block input
           // so the player can immediately try another key
@@ -1703,12 +1719,11 @@ window.onload = function () {
         targetRow = bestR; targetCol = bestC;
       } else {
         // King / pawn: clamp to ±1
-        var dx = dCol > 0 ? 1 : (dCol < 0 ? -1 : 0);
-        var dy = dRow > 0 ? 1 : (dRow < 0 ? -1 : 0);
+        dx = dCol > 0 ? 1 : (dCol < 0 ? -1 : 0);
+        dy = dRow > 0 ? 1 : (dRow < 0 ? -1 : 0);
         targetRow = pr + dy;
         targetCol = pc + dx;
       }
-
 
       mouseRow = targetRow;
       mouseCol = targetCol;
@@ -1803,7 +1818,7 @@ window.onload = function () {
             } else {
               index -= (colIndex + 1) / 2;
             }
-            if (row[index] && row[index].piece) {
+            if (row[index] && row[index].piece && !row[index].piece.shape) {
               addSvgShape(row[index].piece);
             }
           }
@@ -2215,6 +2230,14 @@ window.onload = function () {
           updatePieceStyle(player);
         }
       }
+    } else {
+      // Piece is not animating, just ensure its position is up to date
+      computeCellPos(player.row, player.col);
+      player.x = computeCellPos.res.x;
+      player.y = computeCellPos.res.y;
+      player.opacity = computeCellPos.res.opacity;
+      player.scale = computeCellPos.res.scale;
+      updatePieceStyle(player);
     }
 
     //update removedPieces
@@ -3611,6 +3634,7 @@ window.onload = function () {
   document.onkeydown = function (e) {
     onkey(true, e);
   };
+
   function onmouse(isClick, e) {
     mouse.click = isClick;
     document.onmousemove(e);
@@ -3619,9 +3643,42 @@ window.onload = function () {
     onmouse(true, e);
   };
   document.onmousemove = function (e) {
-    mouse.x = e.clientX - root.offsetLeft;
-    mouse.y = e.clientY;
+    // Account for CSS scale transform on #root
+    var rootEl = document.getElementById("root");
+    var scale = 1;
+    if (rootEl) {
+      var rect = rootEl.getBoundingClientRect();
+      scale = rect.width / SIZE; // actual rendered width / logical width
+    }
+    mouse.x = (e.clientX - (rootEl ? rootEl.getBoundingClientRect().left : root.offsetLeft)) / scale;
+    mouse.y = e.clientY / scale;
   };
+
+  // Touch support: map touch coordinates to logical game coordinates
+  function ontouch(e) {
+    e.preventDefault();
+    var touch = e.changedTouches[0];
+    var rootEl = document.getElementById("root");
+    var scale = 1;
+    var offsetLeft = 0;
+    if (rootEl) {
+      var rect = rootEl.getBoundingClientRect();
+      scale = rect.width / SIZE;
+      offsetLeft = rect.left;
+    }
+    mouse.x = (touch.clientX - offsetLeft) / scale;
+    mouse.y = touch.clientY / scale;
+    mouse.click = (e.type === "touchstart" || e.type === "touchend");
+    // Simulate the rest of the mouse handling
+    // Trigger space/click for advancing the intro
+    if (e.type === "touchend") {
+      keys.space = 1;
+      setTimeout(function() { keys.space = 0; }, 100);
+    }
+  }
+  document.addEventListener("touchstart", ontouch, { passive: false });
+  document.addEventListener("touchmove",  ontouch, { passive: false });
+  document.addEventListener("touchend",   ontouch, { passive: false });
 
   /*
     document.oncontextmenu = function(e){

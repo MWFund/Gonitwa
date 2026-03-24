@@ -1,0 +1,132 @@
+diff --git a/game.js b/game.js
+index 8294217..3c0cd88 100644
+--- a/game.js
++++ b/game.js
+@@ -1368,10 +1368,12 @@ window.onload = function () {
+ 
+     if (piece.showThreat) {
+       //not very subtle but does the job, just scan everything in a wide range, we ensure it won't be a problem when building the checkboard
+-      for (var i = piece.row - NUM_CELLS; i < piece.row + NUM_CELLS; i++) {
++      var startRow = Math.max(0, piece.row - NUM_CELLS);
++      var endRow = piece.row + NUM_CELLS;
++      for (var i = startRow; i < endRow; i++) {
+         var rowContent = checkBoard[i];
+         if (rowContent) {
+-          for (var j = piece.col - NUM_CELLS; j < piece.col + NUM_CELLS; j++) {
++          for (var j = 0; j < NUM_CELLS; j++) {
+             if (rowContent[j]) {
+               rowContent[j].showThreat = false;
+             }
+@@ -1413,6 +1415,7 @@ window.onload = function () {
+       //console.log('renderTime', now-t);
+     }
+     mouse.click = false;
++    mouse.up = false;
+ 
+     if (window.ste) ste();
+ 
+@@ -1591,6 +1594,10 @@ window.onload = function () {
+     if (topRowDisplayed <= 0) { return; }
+     if (player.invalid || intro) { return; } // can't move during animation
+ 
++    if (keys.up === 1 || keys.down === 1 || keys.left === 1 || keys.right === 1) {
++      console.log('Key pressed', keys);
++    }
++
+     var dx = 0;
+     var dy = 0;
+     if (!keysBlockedUntilAllUp) {
+@@ -1612,11 +1619,15 @@ window.onload = function () {
+ 
+         // Resolve the target cell according to piece movement rules
+         var target = resolveKeyboardMove(dx, dy);
++        console.log('Keyboard move resolved to', target, 'from', player.row, player.col);
+         if (target) {
+           // Final validation (also catches boundary/path issues)
+           var tr = target[0], tc = target[1];
+           if (isValidPlayerMove(player.row, player.col, tr, tc)) {
++            console.log('Move is valid, calling movePlayer');
+             movePlayer(tr, tc);
++          } else {
++            console.log('Move is invalid according to isValidPlayerMove');
+           }
+           // If move was invalid (e.g. pawn tries to go backward), don't block input
+           // so the player can immediately try another key
+@@ -1702,14 +1713,30 @@ window.onload = function () {
+       mouseRow = targetRow;
+       mouseCol = targetCol;
+ 
+-      if (mouse.click && isValidPlayerMove(pr, pc, targetRow, targetCol)) {
+-        movePlayer(targetRow, targetCol);
++      if (mouse.down && !player.dragged && rawRow === pr && rawCol === pc) {
++        player.dragged = true;
++      }
++
++      if (player.dragged) {
++        if (mouse.up) {
++          player.dragged = false;
++          if (isValidPlayerMove(pr, pc, targetRow, targetCol)) {
++            movePlayer(targetRow, targetCol);
++          }
++        }
++      } else {
++        if (mouse.click && isValidPlayerMove(pr, pc, targetRow, targetCol)) {
++          movePlayer(targetRow, targetCol);
++        }
+       }
+ 
+       //console.log(mouseX,mouseY,reverseProject.res,mouseCol,mouseRow);
+     } else {
+       mouseCol = -1;
+       mouseRow = -1;
++      if (mouse.up && player && player.dragged) {
++        player.dragged = false;
++      }
+     }
+   }
+ 
+@@ -2204,6 +2231,11 @@ window.onload = function () {
+           updatePieceStyle(player);
+         }
+       }
++    } else if (player.dragged && mouse.x && mouse.y) {
++      player.x = mouse.x;
++      player.y = mouse.y;
++      player.scale *= 1.2;
++      updatePieceStyle(player);
+     }
+ 
+     //update removedPieces
+@@ -3601,13 +3633,18 @@ window.onload = function () {
+     onkey(true, e);
+   };
+ 
+-  function onmouse(isClick, e) {
+-    mouse.click = isClick;
+-    document.onmousemove(e);
++  function onmouse(isDown, e) {
++    if (isDown) mouse.click = true;
++    mouse.down = isDown;
++    mouse.up = !isDown;
++    if (e && e.clientX) document.onmousemove(e);
+   }
+   document.onmousedown = function (e) {
+     onmouse(true, e);
+   };
++  document.onmouseup = function (e) {
++    onmouse(false, e);
++  };
+   document.onmousemove = function (e) {
+     // Account for CSS scale transform on #root
+     var rootEl = document.getElementById("root");
+@@ -3634,7 +3671,9 @@ window.onload = function () {
+     }
+     mouse.x = (touch.clientX - offsetLeft) / scale;
+     mouse.y = touch.clientY / scale;
+-    mouse.click = (e.type === "touchstart" || e.type === "touchend");
++    mouse.down = (e.type === "touchstart" || e.type === "touchmove");
++    mouse.up = (e.type === "touchend");
++    if (e.type === "touchstart") mouse.click = true;
+     // Simulate the rest of the mouse handling
+     // Trigger space/click for advancing the intro
+     if (e.type === "touchend") {
