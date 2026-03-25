@@ -812,6 +812,188 @@ window.onload = function () {
     requestAnimationFrame(tic);
   }
 
+
+
+  function getLevelData() {
+    return [
+      //0 TODO: intro: first pawn
+      [
+        {
+          intro: true,
+        },
+        "",
+        "",
+        "",
+        intro ? "  reqr" : "",
+        intro ? "   kk" : "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "kkkkkkkk",
+      ],
+      // first pawn
+      [
+        {
+          showThreat: "p",
+        },
+        "",
+        "",
+        "    p",
+        "",
+        "",
+        "",
+        "",
+        "",
+      ],
+      // scattered pawns
+      ["  pppp", "  pppp", "", "  p", "", "     p", "", " p"],
+      // pawn rows
+      ["", "pppppp", "", "  pppppp", "", "pppppp", "", ""],
+      // triangle
+      ["", "pp   ppp", "  p p", "   p", "", "", "", ""],
+      // sawtooth
+      ["", "   pp", "p p  p p", " p    p", "", "", "", ""],
+      // wedges
+      ["", "    ppp", "     p", "ppp", " p   ppp", "      p", "", ""],
+      //CHECK POINT 1
+      "checkpoint",
+      // first rook
+      [
+        {
+          showThreat: "r",
+        },
+        "",
+        "   p",
+        "",
+        "   r",
+        "",
+        "   p",
+        "",
+        "",
+      ],
+      // rook diag
+      ["", "", "r", " r", "  r", "   r", "    r", "     r", "pppppp"],
+      // rook rows
+      ["", "", "", "       p", "    rp r", "", "", "pp", "r   p  p", "p"],
+      // rook labyrinth
+      [
+        "",
+        "p     r",
+        "r     p",
+        "r    p",
+        "",
+        "   p",
+        "   p",
+        "p  ppppp",
+        "",
+      ],
+      //CHECK POINT 2
+      "checkpoint",
+      //10 first bishop
+      [
+        {
+          showThreat: "b",
+        },
+        "",
+        "",
+        "",
+        "",
+        "...b",
+        "",
+        "",
+        "",
+        "",
+      ],
+      //11 bishop field
+      ["", " p p p", "b b b b", "", "", "", "", "", ""],
+      //12 rooks & bishops simple
+      ["", "r.p..p.r", "p......p", "", "b      b", "pp....pp", "", ""],
+      //13 pawns, bishops and rooks
+      ["", "r", " r  p..b", "     ..r", "....p", "...p", "..p", "pp.....p"],
+      //CHECK POINT 3
+      "checkpoint",
+      //14 first knight
+      [
+        {
+          showThreat: "k",
+        },
+        "",
+        "",
+        "   k",
+        "",
+        "",
+        "",
+        "",
+        "",
+      ],
+      //15 knight rows
+      ["p", "r.....p", "", "", "......kk", "", "pkk", ""],
+      //rooks bishop and knight
+      ["p   pppp", "r    b r", "   p b p", "", "", "", " k", "", "", ""],
+      //CHECK POINT 4
+      "checkpoint",
+      //first land mine
+      [
+        {
+          showThreat: "l",
+        },
+        "",
+        "",
+        "",
+        "   l",
+        "",
+        "",
+        "",
+        "",
+      ],
+      //land mines
+      [
+        "l.llllll",
+        "l.l....l",
+        "..l.llll",
+        ".ll.l   ",
+        "l...l l ",
+        "l.lll l ",
+        "l.    l ",
+        "lllllll ",
+      ],
+      //land mines and pawns
+      [
+        " p  pll",
+        " l p   l",
+        "lpl p p ",
+        "     lp",
+        "ll ll l",
+        " l  l",
+        "",
+        "",
+      ],
+      //k,r,b,p,l
+      [
+        "",
+        "  r",
+        "  llk",
+        "     .",
+        "   l ..",
+        "   p  pb",
+        "  . .  l",
+        "  p  l",
+        "",
+        "",
+        "",
+        "",
+        "",
+      ],
+      //CHECK POINT 5
+      "checkpoint",
+      ["", "c", "", "", "", "", ""]
+    ];
+  }
+
+
   function initCheckBoard(startCheckPointIndex) {
     if (checkBoard) {
       destroyCheckBoard();
@@ -821,207 +1003,16 @@ window.onload = function () {
     var CHECK_POINT_HEIGHT = 5;
     var currentRowIndex = 0;
 
-    //0 TODO: intro: first pawn
-    block(
-      {
-        intro: true,
-      },
-      "",
-      "",
-      "",
-      intro ? "  reqr" : "",
-      intro ? "   kk" : "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "kkkkkkkk",
-    );
+    var levelData = getLevelData();
+    for (var i = 0; i < levelData.length; i++) {
+      var item = levelData[i];
+      if (item === "checkpoint") {
+        checkPoint();
+      } else {
+        block.apply(null, item);
+      }
+    }
 
-    // first pawn
-    block(
-      {
-        showThreat: "p",
-      },
-      "",
-      "",
-      "    p",
-      "",
-      "",
-      "",
-      "",
-      "",
-    );
-
-    // scattered pawns
-    block("  pppp", "  pppp", "", "  p", "", "     p", "", " p");
-
-    // pawn rows
-    block("", "pppppp", "", "  pppppp", "", "pppppp", "", "");
-
-    // triangle
-    block("", "pp   ppp", "  p p", "   p", "", "", "", "");
-
-    // sawtooth
-    block("", "   pp", "p p  p p", " p    p", "", "", "", "");
-
-    // wedges
-    block("", "    ppp", "     p", "ppp", " p   ppp", "      p", "", "");
-
-    //CHECK POINT 1
-    checkPoint();
-
-    // first rook
-    block(
-      {
-        showThreat: "r",
-      },
-      "",
-      "   p",
-      "",
-      "   r",
-      "",
-      "   p",
-      "",
-      "",
-    );
-
-    // rook diag
-    block("", "", "r", " r", "  r", "   r", "    r", "     r", "pppppp");
-
-    // rook rows
-    block("", "", "", "       p", "    rp r", "", "", "pp", "r   p  p", "p");
-
-    // rook labyrinth
-    block(
-      "",
-      "p     r",
-      "r     p",
-      "r    p",
-      "",
-      "   p",
-      "   p",
-      "p  ppppp",
-      "",
-    );
-
-    //CHECK POINT 2
-    checkPoint();
-
-    //10 first bishop
-    block(
-      {
-        showThreat: "b",
-      },
-      "",
-      "",
-      "",
-      "",
-      "...b",
-      "",
-      "",
-      "",
-      "",
-    );
-
-    //11 bishop field
-    block("", " p p p", "b b b b", "", "", "", "", "", "");
-
-    //12 rooks & bishops simple
-    block("", "r.p..p.r", "p......p", "", "b      b", "pp....pp", "", "");
-
-    //13 pawns, bishops and rooks
-    block("", "r", " r  p..b", "     ..r", "....p", "...p", "..p", "pp.....p");
-
-    //CHECK POINT 3
-    checkPoint();
-
-    //14 first knight
-    block(
-      {
-        showThreat: "k",
-      },
-      "",
-      "",
-      "   k",
-      "",
-      "",
-      "",
-      "",
-      "",
-    );
-
-    //15 knight rows
-    block("p", "r.....p", "", "", "......kk", "", "pkk", "");
-
-    //rooks bishop and knight
-    block("p   pppp", "r    b r", "   p b p", "", "", "", " k", "", "", "");
-
-    //CHECK POINT 4
-    checkPoint();
-
-    //first land mine
-    block(
-      {
-        showThreat: "l",
-      },
-      "",
-      "",
-      "",
-      "   l",
-      "",
-      "",
-      "",
-      "",
-    );
-
-    //land mines
-    block(
-      "l.llllll",
-      "l.l....l",
-      "..l.llll",
-      ".ll.l   ",
-      "l...l l ",
-      "l.lll l ",
-      "l.    l ",
-      "lllllll ",
-    );
-
-    //land mines and pawns
-    block(
-      " p  pll",
-      " l p   l",
-      "lpl p p ",
-      "     lp",
-      "ll ll l",
-      " l  l",
-      "",
-      "",
-    );
-
-    //k,r,b,p,l
-    block(
-      "",
-      "  r",
-      "  llk",
-      "     .",
-      "   l ..",
-      "   p  pb",
-      "  . .  l",
-      "  p  l",
-      "",
-      "",
-      "",
-      "",
-      "",
-    );
-
-    //CHECK POINT 5
-    checkPoint();
-
-    block("", "c", "", "", "", "", "");
     lastRowIndex = currentRowIndex;
 
     // Map selectedPiece string to SVG piece type char
