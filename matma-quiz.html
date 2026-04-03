@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematyka na Szachownicy - Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        .btn:hover:not(:disabled) {
+            background-color: #d5dbdb;
+            border-color: #95a5a6;
+        }
+        .btn:disabled {
+            cursor: not-allowed;
+        }
+        .btn.correct {
+            background-color: #2ecc71;
+            border-color: #27ae60;
+            color: white;
+        }
+        .btn.wrong {
+            background-color: #e74c3c;
+            border-color: #c0392b;
+            color: white;
+        }
+        .feedback {
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #e8f8f5;
+            border-left: 5px solid #1abc9c;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .next-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+        }
+        .next-btn:hover {
+            background-color: #2980b9;
+        }
+        .score-section {
+            text-align: center;
+            display: none;
+        }
+        .score-section h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-header">
+        <h1>Pytanie <span id="current-question-num">1</span> z <span id="total-questions">5</span></h1>
+    </div>
+    
+    <div id="question-container">
+        <div id="question" class="question-text">Pytanie pojawi się tutaj</div>
+        <div id="answer-buttons" class="btn-grid">
+            </div>
+        <div id="feedback" class="feedback"></div>
+    </div>
+    
+    <div class="controls">
+        <button id="next-btn" class="next-btn">Następne pytanie</button>
+    </div>
+
+    <div id="score-section" class="score-section">
+        <h2>Koniec quizu!</h2>
+        <p>Twój wynik to: <strong id="score">0</strong> z <strong id="max-score">5</strong>.</p>
+        <button id="restart-btn" class="next-btn" style="display: inline-block; margin-top: 20px;">Zagraj jeszcze raz</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "Jak w matematyce nazywamy odległość na szachownicy, którą wyznaczają ruchy króla?",
+            answers: [
+                { text: "Odległość Euklidesa", correct: false },
+                { text: "Odległość Czebyszewa", correct: true },
+                { text: "Odległość Shannona", correct: false },
+                { text: "Metryka Hamiltona", correct: false }
+            ],
+            explanation: "Zgadza się! Odległość Czebyszewa zakłada, że krok po skosie kosztuje tyle samo co krok w pionie lub poziomie - dokładnie tak, jak porusza się król na szachownicy."
+        },
+        {
+            question: "Dlaczego nie da się w całości pokryć obciętej szachownicy (bez dwóch przeciwległych rogów) klockami domino?",
+            answers: [
+                { text: "Ponieważ brakuje nam jednego klocka domino.", correct: false },
+                { text: "Ponieważ zostaje różna liczba pól białych i czarnych.", correct: true },
+                { text: "Ponieważ klocki domino mają złe wymiary.", correct: false },
+                { text: "To fałsz, da się ją pokryć przy odpowiednim ułożeniu.", correct: false }
+            ],
+            explanation: "Dokładnie! To klasyczny przykład wykorzystania niezmiennika. Domino zawsze przykrywa jedno pole białe i czarne, a po obcięciu rogów tego samego koloru, proporcja pól na planszy zostaje zaburzona."
+        },
+        {
+            question: "Jak nazywa się matematyczna ścieżka, której szukamy rozwiązując problem skoczka odwiedzającego każde pole dokładnie raz?",
+            answers: [
+                { text: "Cykl Hamiltona", correct: true },
+                { text: "Ścieżka Eulera", correct: false },
+                { text: "Ciąg Fibonacciego", correct: false },
+                { text: "Węzeł Zermelo", correct: false }
+            ],
+            explanation: "Świetnie! W teorii grafów ścieżka, która odwiedza każdy wierzchołek (pole szachownicy) dokładnie jeden raz, to właśnie cykl Hamiltona."
+        },
+        {
+            question: "Jaką wartość ma w przybliżeniu Liczba Shannona, określająca liczbę możliwych partii szachowych?",
+            answers: [
+                { text: "10 do potęgi 20", correct: false },
+                { text: "10 do potęgi 80", correct: false },
+                { text: "10 do potęgi 120", correct: true },
+                { text: "Nieskończoność", correct: false }
+            ],
+            explanation: "Poprawnie! Liczba Shannona to około 10^120. Dla porównania, liczba atomów w obserwowalnym wszechświecie to zaledwie około 10^80."
+        },
+        {
+            question: "Zgodnie z Twierdzeniem Zermelo, jaki powinien być najprawdopodobniej wynik idealnej, perfekcyjnie rozegranej partii szachów?",
+            answers: [
+                { text: "Zawsze wygrywają białe", correct: false },
+                { text: "Zawsze wygrywają czarne", correct: false },
+                { text: "Zawsze jest remis", correct: true },
+                { text: "Zależy to od rzutu monetą", correct: false }
+            ],
+            explanation: "Znakomicie! Choć nie rozwiązaliśmy szachów w 100%, matematycy i superkomputery zgadzają się, że perfekcyjna gra z obu stron musi ostatecznie prowadzić do remisu."
+        }
+    ];
+
+    const questionElement = document.getElementById('question');
+    const answerButtonsElement = document.getElementById('answer-buttons');
+    const feedbackElement = document.getElementById('feedback');
+    const nextButton = document.getElementById('next-btn');
+    const scoreSection = document.getElementById('score-section');
+    const quizHeader = document.getElementById('quiz-header');
+    const questionContainer = document.getElementById('question-container');
+    const currentQuestionNumElement = document.getElementById('current-question-num');
+    const totalQuestionsElement = document.getElementById('total-questions');
+    const scoreElement = document.getElementById('score');
+    const maxScoreElement = document.getElementById('max-score');
+    const restartButton = document.getElementById('restart-btn');
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    totalQuestionsElement.innerText = questions.length;
+    maxScoreElement.innerText = questions.length;
+
+    function startGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        scoreSection.style.display = 'none';
+        quizHeader.style.display = 'block';
+        questionContainer.style.display = 'block';
+        setNextQuestion();
+    }
+
+    function setNextQuestion() {
+        resetState();
+        currentQuestionNumElement.innerText = currentQuestionIndex + 1;
+        showQuestion(questions[currentQuestionIndex]);
+    }
+
+    function showQuestion(question) {
+        questionElement.innerText = question.question;
+        question.answers.forEach(answer => {
+            const button = document.createElement('button');
+            button.innerText = answer.text;
+            button.classList.add('btn');
+            if (answer.correct) {
+                button.dataset.correct = answer.correct;
+            }
+            button.addEventListener('click', selectAnswer);
+            answerButtonsElement.appendChild(button);
+        });
+    }
+
+    function resetState() {
+        nextButton.style.display = 'none';
+        feedbackElement.style.display = 'none';
+        while (answerButtonsElement.firstChild) {
+            answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+        }
+    }
+
+    function selectAnswer(e) {
+        const selectedButton = e.target;
+        const correct = selectedButton.dataset.correct === 'true';
+        
+        if (correct) {
+            score++;
+            selectedButton.classList.add('correct');
+        } else {
+            selectedButton.classList.add('wrong');
+            // Podświetl poprawną odpowiedź
+            Array.from(answerButtonsElement.children).forEach(button => {
+                if(button.dataset.correct === 'true') {
+                    button.classList.add('correct');
+                }
+            });
+        }
+
+        // Zablokuj wszystkie przyciski po odpowiedzi
+        Array.from(answerButtonsElement.children).forEach(button => {
+            button.disabled = true;
+        });
+
+        // Pokaż wyjaśnienie
+        feedbackElement.innerText = questions[currentQuestionIndex].explanation;
+        feedbackElement.style.display = 'block';
+        
+        nextButton.style.display = 'block';
+    }
+
+    nextButton.addEventListener('click', () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            setNextQuestion();
+        } else {
+            showScore();
+        }
+    });
+
+    function showScore() {
+        quizHeader.style.display = 'none';
+        questionContainer.style.display = 'none';
+        nextButton.style.display = 'none';
+        scoreSection.style.display = 'block';
+        scoreElement.innerText = score;
+    }
+
+    restartButton.addEventListener('click', startGame);
+
+    // Rozpocznij grę po załadowaniu
+    startGame();
+</script>
+
+</body>
+</html>
